@@ -1,0 +1,66 @@
+﻿@using AppTech.MVC.ViewModels.SubscriptionVMs
+@model AddSubscriptionToUsersVM
+
+@{
+    ViewBag.Title = "Add Subscriptions to Users";
+}
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Add Subscription to Users</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Subscription Details</h6>
+        </div>
+        <div style="color: black;" class="card-body">
+            <form asp-action="AddSubscriptionToUser" method="post" class="form-horizontal">
+
+                <div class="row">
+                    <div class="col-md-6 form-half">
+                        <!-- Subscription Dropdown -->
+                        <div class="form-group">
+                            <label asp-for="SubscriptionId" class="control-label">Subscription</label>
+                            <select asp-for="SubscriptionId" class="form-control">
+                                @foreach (var subscription in ViewBag.Subscriptions)
+                                {
+                                    <option value="@subscription.Id">
+                                        @subscription.Certification.Title (Price: @subscription.Price)
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="SubscriptionId" class="text-danger"></span>
+                        </div>
+
+                        <!-- Username or Email Input -->
+                        <div class="form-group">
+                            <label asp-for="UsernameOrEmail" class="control-label">Username or Email address</label>
+                            <input asp-for="UsernameOrEmail" class="form-control" placeholder="Enter username or email" />
+                            <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Add Subscription</button>
+                    <a asp-action="Index" asp-controller="Subscription" class="btn btn-warning">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

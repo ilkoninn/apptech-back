@@ -1,0 +1,30 @@
+<TKKPG>
+  <Request>
+    <Operation>CreateOrder</Operation>
+    <Language>EN</Language>
+    <Order>
+      <OrderType>Purchase</OrderType>
+      <Merchant>E1000010</Merchant>
+      <Amount>1300</Amount>
+      <Currency>944</Currency>
+      <Description>TAKSIT=6</Description>
+      <ApproveURL>/payments/handler?checkToken=8b72557f3c9722e86e9dba3e4bd7184aabe282c7171a3b5da44a5a943a1423d5</ApproveURL>
+      <CancelURL>/payments/handler?checkToken=8b72557f3c9722e86e9dba3e4bd7184aabe282c7171a3b5da44a5a943a1423d5</CancelURL>
+      <DeclineURL>/payments/handler?checkToken=8b72557f3c9722e86e9dba3e4bd7184aabe282c7171a3b5da44a5a943a1423d5</DeclineURL>
+    </Order>
+  </Request>
+</TKKPG>
+
+# GetOrderInformation sorğusu
+<?xml version="1.0" encoding="UTF-8"?>
+<TKKPG>
+    <Request>
+        <Operation>GetOrderInformation</Operation>
+        <Language>EN</Language>
+        <Order>
+            <Merchant>E1000010</Merchant>
+            <OrderID>14008766</OrderID>
+        </Order>
+        <SessionID>277F3E926B1FADDA45E449B0C0E8CF76</SessionID>
+    </Request>
+</TKKPG>

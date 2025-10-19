@@ -1,0 +1,170 @@
+﻿@model AppTech.Business.DTOs.PromotionDTOs.UpdatePromotionDTO
+<style>
+    .form-control {
+        color: #333;
+        background-color: #f8f9fc;
+        border: 1px solid #ddd;
+    }
+
+        .form-control::placeholder {
+            color: #666;
+        }
+    /* Style for the multi-select box */
+    #CertificationSelect {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+        background-color: #f4f4f4;
+        border: 1px solid #ddd;
+        border-radius: 8px; /* Rounded corners */
+        color: #333;
+        min-height: 150px;
+        overflow-y: auto; /* Enable scroll if options exceed the height */
+    }
+
+        /* Style for each option inside the select */
+        #CertificationSelect option {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s ease;
+        }
+
+            /* Style for the option when hovered */
+            #CertificationSelect option:hover {
+                background-color: #e0e0e0;
+                color: #000;
+            }
+
+            /* Style for the selected options */
+            #CertificationSelect option:checked {
+                background-color: #4e73df; /* Change background color of selected items */
+                color: #fff; /* White text for selected items */
+            }
+
+    label {
+        color: #333;
+        font-weight: 500;
+    }
+
+    h1, h3 {
+        color: #333;
+    }
+
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+
+    .form-half {
+        padding-right: 15px;
+    }
+</style>
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Update Promotion</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Promotion Details</h6>
+        </div>
+        <div style="color: black;" class="card-body">
+            <form asp-action="Update" method="post" id="updatePromotionForm">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PageIndex" />
+
+                <div class="row">
+                    <div class="col-md-6 form-half">
+                        <div class="form-group">
+                            <label for="Code">Promotion Code</label>
+                            <input type="text" class="form-control" asp-for="Code" />
+                            <span asp-validation-for="Code" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Percentage">Discount Percentage</label>
+                            <input type="number" class="form-control" asp-for="Percentage" step="0.01" />
+                            <span asp-validation-for="Percentage" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 form-half">
+                        <div class="form-group">
+                            <label for="PromotionEnd">Promotion End Time</label>
+                            <input type="datetime-local" id="PromotionEnd" asp-for="EndedOn" class="form-control"
+                                   min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" />
+                            <span asp-validation-for="EndedOn" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="CertificationFilter">Filter Certifications</label>
+                            <input type="text" class="form-control" id="CertificationFilter" placeholder="Search certifications..." />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Certifications">Certifications</label>
+                            <select class="form-control" asp-for="CertificationIds" asp-items="ViewBag.Certifications" id="CertificationSelect" multiple="multiple">
+                            </select>
+                            <span asp-validation-for="CertificationIds" class="text-danger"></span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Update Promotion</button>
+                    <a asp-action="Index" asp-controller="Promotion" asp-route-pageIndex="@Model.PageIndex" class="btn btn-warning">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Filter options by text input
+    document.getElementById('CertificationFilter').addEventListener('input', function () {
+        var filter = this.value.toLowerCase();
+        var options = document.getElementById('CertificationSelect').options;
+
+        for (var i = 0; i < options.length; i++) {
+            var optionText = options[i].text.toLowerCase();
+            // Show only options that start with the filter text
+            if (optionText.startsWith(filter)) {
+                options[i].style.display = '';
+            } else {
+                options[i].style.display = 'none';
+            }
+        }
+    });
+
+    document.getElementById('updatePromotionForm').addEventListener('submit', function (e) {
+        var select = document.getElementById('CertificationSelect');
+        var selected = Array.from(select.options).filter(option => option.selected);
+
+        // Automatically select all options if none are selected
+        if (selected.length === 0) {
+            for (var i = 0; i < select.options.length; i++) {
+                select.options[i].selected = true;
+            }
+        }
+
+        // Set default end date to 100 years from now if none is selected
+        var promotionEnd = document.getElementById('PromotionEnd');
+        if (!promotionEnd.value) {
+            var date = new Date();
+            date.setFullYear(date.getFullYear() + 100); // Add 100 years
+            promotionEnd.value = date.toISOString().slice(0, 16); // Format as "YYYY-MM-DDTHH:MM"
+        }
+    });
+</script>

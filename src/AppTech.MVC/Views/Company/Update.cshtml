@@ -1,0 +1,172 @@
+﻿@using AppTech.Core.Enums
+@model UpdateCompanyDTO
+@{
+    ViewBag.Title = "Update Company";
+}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Update Company</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Company Details</h6>
+        </div>
+        <div style="color: black;" class="card-body">
+            <form asp-action="Update" asp-controller="Company" enctype="multipart/form-data" method="POST">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PageIndex" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Title">Title</label>
+                            <input asp-for="Title" class="form-control" placeholder="Enter company title">
+                        </div>
+
+                        <div class="form-group">
+                            <img src="@Model.DashImageUrl" class="mb-3" alt="@Model.Title"
+                                 style="width: 150px; border-radius: 5px; border: 3px solid var(--primary-color);" />
+
+                            <div class="form-group">
+                                <label asp-for="Image">Upload New Company Image</label>
+                                <input asp-for="Image" type="file" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6" style="margin-top: 2.4rem;">
+                        <label asp-for="IsTop">Is Top Company?</label>
+                        <input asp-for="IsTop" type="checkbox" class="form-check-input mx-4">
+                    </div>
+                </div>                
+
+                <div class="card-header mb-4" style="margin-left: -20px; width: 103.3%">
+                    <h6 class="m-0 font-weight-bold text-primary">Company Translations</h6>
+                </div>
+
+                <div id="translations">
+                    @for (int i = 0; i < Model.Translations.Count; i++)
+                    {
+                        <div class="translation-item" id="translation-@Model.Translations[i].Id">
+                            <h5>Translation @(i + 1)</h5>
+                            <input type="hidden" asp-for="Translations[i].Id" />
+                            <div class="form-group">
+                                <label asp-for="Translations[i].SecTitle">Translation Title</label>
+                                <input type="text" class="form-control" asp-for="Translations[i].SecTitle" placeholder="Enter translation title">
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Translations[i].SecDescription">Translation Description</label>
+                                <input type="text" class="form-control" asp-for="Translations[i].SecDescription" placeholder="Enter translation description">
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Translations[i].Language">Language</label>
+                                <select class="form-control" asp-for="Translations[i].Language">
+                                    <option value="Az">Azerbaijani</option>
+                                    <option value="En">English</option>
+                                    <option value="Ru">Russian</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-danger" onclick="removeTranslation(this, @Model.Translations[i].Id)">Remove</button>
+                            <hr />
+                        </div>
+                    }
+                </div>
+
+                <input type="hidden" name="RemovedTranslationIds" id="RemovedTranslationIds" />
+
+                <button type="button" class="btn btn-secondary" id="addTranslationBtn" onclick="addTranslation()">Add Another Translation</button>
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Update Company</button>
+                    <a asp-action="Index" asp-controller="Company" asp-route-pageIndex="@Model.PageIndex" class="btn btn-warning">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let translationIndex = @Model.Translations.Count;
+    const maxTranslations = 3; // Set your desired maximum number of translations
+
+    function checkTranslationLimit() {
+        const addButton = document.getElementById('addTranslationBtn');
+        if (translationIndex >= maxTranslations) {
+            addButton.disabled = true;
+        } else {
+            addButton.disabled = false;
+        }
+    }
+
+    function addTranslation() {
+        if (translationIndex >= maxTranslations) return;
+        const translationsDiv = document.getElementById('translations');
+        translationIndex++;
+
+        const newTranslation = `
+                <div class="translation-item">
+                    <h5>Translation ${translationIndex}</h5>
+                    <input type="hidden" name="Translations[${translationIndex - 1}].Id" value="0" />
+                    <div class="form-group">
+                        <label>Translation Title</label>
+                        <input type="text" class="form-control" name="Translations[${translationIndex - 1}].SecTitle" placeholder="Enter translation title">
+                    </div>
+                    <div class="form-group">
+                        <label>Translation Description</label>
+                        <input type="text" class="form-control" name="Translations[${translationIndex - 1}].SecDescription" placeholder="Enter translation description">
+                    </div>
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select class="form-control" name="Translations[${translationIndex - 1}].Language">
+                            <option value="Az">Azerbaijani</option>
+                            <option value="En">English</option>
+                            <option value="Ru">Russian</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="removeTranslation(this, 0)">Remove</button>
+                    <hr />
+                </div>`;
+        translationsDiv.insertAdjacentHTML('beforeend', newTranslation);
+
+        checkTranslationLimit(); // Check the limit after adding a new translation
+    }
+
+    function removeTranslation(button, translationId) {
+        const translationItem = button.closest('.translation-item');
+
+        if (translationId !== 0) {
+            const removedIdsField = document.getElementById('RemovedTranslationIds');
+            let removedIds = removedIdsField.value;
+
+            if (removedIds) {
+                removedIds += ',' + translationId; // Append to existing values
+            } else {
+                removedIds = translationId; // First value
+            }
+
+            removedIdsField.value = removedIds;
+        }
+
+        translationItem.remove(); // Remove the translation from the DOM
+        translationIndex--; // Adjust the translation count
+        checkTranslationLimit();
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        checkTranslationLimit();
+    });
+</script>
+
+

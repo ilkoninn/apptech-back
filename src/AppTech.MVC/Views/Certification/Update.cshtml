@@ -1,0 +1,200 @@
+﻿@model UpdateCertificationDTO
+@{
+    ViewBag.Title = "Update Certification";
+}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Update Certification</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Certification Details</h6>
+        </div>
+        <div class="card-body" style="color: black">
+            <form asp-action="Update" asp-controller="Certification" enctype="multipart/form-data" method="POST">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PageIndex" />
+                <input type="hidden" asp-for="DashImageUrl" />
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="CompanyId">Company</label>
+                            <select asp-for="CompanyId" class="form-control">
+                                @foreach (var company in ViewBag.Companies)
+                                {
+                                    <option value="@company.Id" selected="@(Model.CompanyId == company.Id ? "selected" : null)">@company.Title</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="LastVersion">Version</label>
+                            <input type="hidden" asp-for="LastVersion" />
+                            <input asp-for="LastVersion" class="form-control" placeholder="Enter certification version" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="SubTitle">SubTitle</label>
+                            <input asp-for="SubTitle" type="text" class="form-control" placeholder="Enter certification subtitle">
+                        </div>
+
+                        @{
+                            var price = Math.Round(Model.Price, 2);
+                            var discountPrice = Math.Round(Model.DiscountPrice, 2);
+                        }
+
+                        <div class="form-group">
+                            <label asp-for="Price">Price</label>
+                            <input asp-for="@price" type="number" class="form-control" name="price" step="0.01"
+                                   placeholder="Enter certification price" />
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="DiscountPrice">Discount Price</label>
+                            <input asp-for="@discountPrice" type="number" class="form-control" name="discountPrice" step="0.01" placeholder="Enter discount price" />
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Code">Code</label>
+                            <input type="hidden" asp-for="Code" />
+                            <input asp-for="Code" class="form-control" placeholder="Enter certification code" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="IsTrend">Is Trending?</label>
+                            <input asp-for="IsTrend" type="checkbox" class="form-check-input mx-4">
+                        </div>
+
+                        <img src="@Model.DashImageUrl" class="mb-3" alt="@Model.Code"
+                             style="width: 150px; border-radius: 5px; border: 3px solid var(--primary-color);" />
+
+                        <div class="form-group">
+                            <label asp-for="Image">Upload Certification Image</label>
+                            <input asp-for="Image" type="file" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-header mb-4" style="margin-left: -20px; width: 103.3%">
+                    <h6 class="m-0 font-weight-bold text-primary">Certification Translations</h6>
+                </div>
+
+                <div id="translations">
+                    @for (int i = 0; i < Model.Translations.Count; i++)
+                    {
+                        <div class="translation-item" id="translation-@Model.Translations[i].Id">
+                            <h5>Translation @(i + 1)</h5>
+                            <input type="hidden" asp-for="Translations[i].Id" />
+
+                            <div class="form-group">
+                                <label asp-for="Translations[i].Description">Description</label>
+                                <input type="text" class="form-control" asp-for="Translations[i].Description" placeholder="Enter description">
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Translations[i].Language">Language</label>
+                                <select class="form-control" asp-for="Translations[i].Language">
+                                    <option value="Az">Azerbaijani</option>
+                                    <option value="En">English</option>
+                                    <option value="Ru">Russian</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-danger" onclick="removeTranslation(this, @Model.Translations[i].Id)">Remove</button>
+                            <hr />
+                        </div>
+                    }
+                </div>
+
+                <input type="hidden" name="RemovedTranslationIds" id="RemovedTranslationIds" />
+
+                <button type="button" class="btn btn-secondary" id="addTranslationBtn" onclick="addTranslation()">Add Another Translation</button>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Update Certification</button>
+                    <a asp-action="Index" asp-controller="Certification" asp-route-pageIndex="@Model.PageIndex" class="btn btn-warning">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    let translationIndex = @Model.Translations.Count; // Tracks current number of translations
+    const maxTranslations = 3; // Maximum allowed translations
+
+    document.addEventListener("DOMContentLoaded", function () {
+        checkTranslationLimit(); // Check initially if the limit has been reached
+    });
+
+    function addTranslation() {
+        if (translationIndex >= maxTranslations) {
+            return; // Prevent adding more than the maximum number of translations
+        }
+
+        const translationsDiv = document.getElementById('translations');
+        translationIndex++; // Increment to track new translation
+
+        // Dynamically create new translation HTML using the current index
+        const newTranslation = `
+                <div class="translation-item">
+                    <h5>Translation ${translationIndex}</h5>
+                    <input type="hidden" name="Translations[${translationIndex - 1}].Id" value="0" />
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" class="form-control" name="Translations[${translationIndex - 1}].Description" placeholder="Enter description">
+                    </div>
+                    <div class="form-group">
+                        <label>Language</label>
+                        <select class="form-control" name="Translations[${translationIndex - 1}].Language">
+                            <option value="Az">Azerbaijani</option>
+                            <option value="En">English</option>
+                            <option value="Ru">Russian</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="removeTranslation(this, 0)">Remove</button>
+                    <hr />
+                </div>`;
+
+        translationsDiv.insertAdjacentHTML('beforeend', newTranslation); // Insert new translation into the DOM
+        checkTranslationLimit(); // Check if the limit is reached after adding new translation
+    }
+
+    function removeTranslation(button, translationId) {
+        const translationItem = button.closest('.translation-item');
+        translationItem.remove(); // Remove the translation element
+        translationIndex--; // Decrement the count
+
+        if (translationId !== 0) {
+            const removedIdsField = document.getElementById('RemovedTranslationIds');
+            removedIdsField.value += (removedIdsField.value ? ',' : '') + translationId; // Store removed ID for backend processing
+        }
+
+        checkTranslationLimit(); // Check if the limit is reached after removing a translation
+    }
+
+    function checkTranslationLimit() {
+        const addButton = document.getElementById('addTranslationBtn');
+        addButton.disabled = translationIndex >= maxTranslations; // Enable or disable the add button based on count
+    }
+</script>
+

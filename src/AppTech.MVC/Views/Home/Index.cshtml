@@ -1,0 +1,171 @@
+﻿@using AppTech.MVC.ViewModels.HomeVMs
+@model HomeVM
+
+<div class="container-fluid">
+
+    <!-- Page Heading -->
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-dark">Dashboard</h1>
+    </div>
+
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card custom-card shadow-sm border-left-dark">
+                <div class="card-body">
+                    <h5 class="font-weight-bold text-dark">Welcome, @Model.UserName!</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Row -->
+    <div class="row" style="color: black;">
+        <!-- All Users List -->
+        <div class="col-xl-4 col-md-12 mb-4">
+            <div class="card custom-card shadow-sm border-left-primary h-100 hover-card">
+                <div class="card-body">
+                    <h5 class="font-weight-bold text-primary text-uppercase">All Users</h5>
+                    <p class="mb-2">Total Users: <strong>@Model.UsersCount</strong></p>
+                    <a asp-action="Index" asp-controller="User" class="btn btn-outline-primary btn-sm">View All Users</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Online Users -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card custom-card shadow-sm border-left-info h-100 hover-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase">Online Users</div>
+                            <div class="h5 font-weight-bold text-dark">@Model.OnOnlineCount</div>
+                        </div>
+                        <div class="ml-auto">
+                            <i class="fas fa-life-ring fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Certifications Completed -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card custom-card shadow-sm border-left-success h-100 hover-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase">Certifications Today</div>
+                            <div class="h5 font-weight-bold text-dark">@Model.TodayCertifications?.Count()</div>
+                        </div>
+                        <div class="ml-auto">
+                            <i class="fas fa-award fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Cards Row -->
+    <div class="row" style="color: black;">
+        <div class="col-6">
+            <div class="card custom-card shadow-sm border-left-secondary hover-card">
+                <div class="card-body">
+                    <h5 class="font-weight-bold text-secondary text-uppercase">Contact Us Messages</h5>
+                    <ul class="list-group list-group-flush">
+                        @if (Model.ContactUsMessages != null && Model.ContactUsMessages.Any())
+                        {
+                            @foreach (var message in Model.ContactUsMessages)
+                            {
+                                <li class="list-group-item">
+                                    @message
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="list-group-item text-muted">No messages found.</li>
+                        }
+                    </ul>
+                    <a asp-action="Index" asp-controller="ContactUs" class="btn btn-outline-secondary btn-sm mt-3">View All Messages</a>
+                </div>
+            </div>
+        </div>
+        <!-- Users on Exam -->
+        <div class="col-xl-6 col-md-12 mb-4">
+            <div class="card custom-card shadow-sm border-left-warning h-100 hover-card">
+                <div class="card-body">
+                    <h5 class="font-weight-bold text-warning text-uppercase">Users on Exam</h5>
+                    <ul class="list-group list-group-flush">
+                        @if (Model.OnExamCount != null && Model.OnExamCount.Any())
+                        {
+                            @foreach (var user in Model.OnExamCount)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @user.UserName
+                                    <small class="text-muted">(@user.Email)</small>
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <li class="list-group-item text-muted">No users on exam currently.</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .custom-card {
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .hover-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-body h5 {
+        margin-bottom: 0.5rem;
+    }
+
+    .list-group-item {
+        font-size: 0.9rem;
+        border: none;
+        padding-left: 0;
+    }
+
+    .btn-outline-primary, .btn-outline-secondary {
+        border-radius: 20px;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .card {
+        border: none;
+    }
+
+        .card.custom-card {
+            background-color: #f8f9fc;
+        }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .shadow-sm {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .text-xs {
+        font-size: 0.75rem;
+    }
+</style>

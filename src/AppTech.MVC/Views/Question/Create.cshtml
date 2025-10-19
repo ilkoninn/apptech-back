@@ -1,0 +1,249 @@
+﻿@model CreateQuestionDTO
+@{
+    ViewBag.Title = "Create Question";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Create Question</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <form asp-action="Create" asp-controller="Question" method="POST" enctype="multipart/form-data">
+
+        <div class="card shadow mb-4">
+            <div class="card-header mb-4">
+                <h6 class="m-0 font-weight-bold text-primary">Content</h6>
+            </div>
+
+            <div style="color: black;" class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="Content">Content</label>
+                            <div id="editor"></div>
+                            <input asp-for="Content" type="hidden" id="EditorContent" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Question Details</h6>
+            </div>
+
+            <div style="color: black;" class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="CertificationId" class="control-label">Certification</label>
+                            <select asp-for="CertificationId" class="form-control">
+                                @foreach (var certification in ViewBag.Certifications)
+                                {
+                                    <option value="@certification.Id">
+                                        @certification.Title (Version: @certification.LastVersion)
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="CertificationId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Point">Point</label>
+                            <input asp-for="Point" type="number" class="form-control"
+                                placeholder="Enter question point">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Type">Type</label>
+                            <select asp-for="Type" class="form-control">
+                                <option value="MultipleChoice">Multiple Choice</option>
+                                <option value="SingleChoice">Single Choice</option>
+                                <option value="Terminal">Terminal</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Images">Upload New Image(s)</label>
+                            <input asp-for="Images" type="file" class="form-control-file" multiple>
+                            <small class="form-text text-muted">You can upload multiple images.</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Server">Node number or Introduction(0)</label>
+                            <input asp-for="Server" type="number" class="form-control"
+                                placeholder="If there is server then input node number...">
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="card-header mb-4" style="margin-left: -20px; width: 103.3%">
+                    <h6 class="m-0 font-weight-bold text-primary">Variants</h6>
+                </div>
+
+                <div id="variants">
+                    <div class="variant-item">
+                        <h5>Variant 1</h5>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label for="Variants_0__Text">Text</label>
+                                    <input type="text" class="form-control" name="Variants[0].Text"
+                                        placeholder="Enter variant text">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="Variants_0__IsCorrect">Is Correct</label>
+                                    <!-- Checkbox, sends true if checked -->
+                                    <input type="checkbox" class="form-control" name="Variants[0].IsCorrect"
+                                        value="true">
+                                    <!-- Hidden field to send false when the checkbox is unchecked -->
+                                    <input type="hidden" name="Variants[0].IsCorrect" value="false" />
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-danger" onclick="removeVariant(this)">Remove</button>
+                        <hr />
+                    </div>
+                </div>
+
+
+                <button type="button" class="btn btn-secondary" id="addVariantBtn" onclick="addVariant()">
+                    Add Another
+                    Variant
+                </button>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-primary">Create Question</button>
+                    <a href="@Url.Action("Index", "Question")" class="btn btn-warning">Back</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill-image-resize-module-v2@3.0.0/image-resize.min.js"></script>
+
+<script defer>
+    const toolbarOptions = [
+        ['bold', 'italic', 'underline', 'strike'],
+        ['blockquote', 'code-block'],
+        ['link', 'image', 'video'],
+        [{ 'header': 1 }, { 'header': 2 }],
+        [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'list': 'check' }],
+        [{ 'script': 'sub' }, { 'script': 'super' }],
+        [{ 'indent': '-1' }, { 'indent': '+1' }],
+        [{ 'direction': 'rtl' }],
+        [{ 'size': ['small', false, 'large', 'huge'] }],
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+        [{ 'color': [] }, { 'background': [] }],
+        [{ 'font': [] }],
+        [{ 'align': [] }],
+        ['clean']
+    ];
+
+    const quill = new Quill('#editor', {
+        placeholder: 'Input your terms of service here...',
+        theme: 'snow',
+        modules: {
+            imageResize: {
+                displaySize: true
+            },
+            toolbar: toolbarOptions
+        }
+    });
+
+    document.querySelector('form').onsubmit = function () {
+        console.log('Submitted');
+        var editorContent = document.getElementById("EditorContent");
+        console.log(quill.root.innerHTML);
+        console.log(quill.getText(0));
+        console.log(quill.getSemanticHTML(0));
+        editorContent.value = quill.root.innerHTML;
+    };
+</script>
+
+<script>
+    let variantIndex = 1;
+    const maxVariants = 5;
+
+    function addVariant() {
+        if (variantIndex >= maxVariants) return;
+
+        const variantsDiv = document.getElementById('variants');
+        const newVariant = `
+                <div class="variant-item">
+                    <h5>Variant ${variantIndex + 1}</h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="Variants_${variantIndex}__Text">Text</label>
+                                <input type="text" class="form-control" name="Variants[${variantIndex}].Text" placeholder="Enter variant text">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="Variants_${variantIndex}__IsCorrect">Is Correct</label>
+                                <!-- Checkbox input -->
+                                <input type="checkbox" class="form-control" name="Variants[${variantIndex}].IsCorrect" value="true">
+                                <!-- Hidden input to send false when checkbox is not checked -->
+                                <input type="hidden" name="Variants[${variantIndex}].IsCorrect" value="false" />
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-danger" onclick="removeVariant(this)">Remove</button>
+                    <hr />
+                </div>`;
+
+        variantsDiv.insertAdjacentHTML('beforeend', newVariant);
+        variantIndex++;
+
+        if (variantIndex >= maxVariants) {
+            document.getElementById('addVariantBtn').disabled = true;
+        }
+    }
+
+    function removeVariant(button) {
+        const variantItem = button.closest('.variant-item');
+        variantItem.remove();
+
+        // Update variant names after removal
+        const variantItems = document.querySelectorAll('.variant-item');
+        variantItems.forEach((item, index) => {
+            item.querySelector('h5').textContent = `Variant ${index + 1}`;
+            item.querySelector('input[type="text"]').name = `Variants[${index}].Text`;
+            item.querySelector('input[type="checkbox"]').name = `Variants[${index}].IsCorrect`;
+            item.querySelector('input[type="hidden"]').name = `Variants[${index}].IsCorrect`;
+        });
+
+        variantIndex = variantItems.length;
+
+        if (variantIndex < maxVariants) {
+            document.getElementById('addVariantBtn').disabled = false;
+        }
+    }
+</script>

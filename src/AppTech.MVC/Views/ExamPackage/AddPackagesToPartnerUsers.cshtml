@@ -1,0 +1,54 @@
+﻿@using AppTech.MVC.ViewModels.ExamPackageVMs
+@model AddPackageToUsersVM
+@{
+    ViewBag.Title = "Add Packages to Partner Users";
+}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Add Exam Package To Users</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Exam Package Details</h6>
+        </div>
+        <div style="color: black;" class="card-body">
+            <form asp-action="AddPackagesToPartnerUsers" method="post" class="form-horizontal">
+
+                <div class="row">
+                    <div class="col-md-6 form-half">
+                        <div class="form-group">
+                            <label asp-for="ExamPackageId" class="control-label">Exam Package</label>
+                            <select asp-for="ExamPackageId" class="form-control" asp-items="ViewBag.ExamPackages">
+                            </select>
+                            <span asp-validation-for="ExamPackageId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="UsernameOrEmail" class="control-label">Username or Email address</label>
+                            <input asp-for="UsernameOrEmail" class="form-control" placeholder="Enter username or email" />
+                            <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Add Package</button>
+                    <a asp-action="Index" asp-controller="ExamPackage" class="btn btn-warning">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

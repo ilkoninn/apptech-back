@@ -1,0 +1,368 @@
+﻿@using AppTech.Core.Entities.Commons
+@model PaginatedQueryable<Question>
+
+<style>
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color-dark);
+        color: white;
+    }
+
+    .pagination .page-link {
+        color: var(--primary-color);
+    }
+
+        .pagination .page-link:hover {
+            background-color: var(--primary-color);
+            color: var(--primary-color-dark);
+        }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-2 text-gray-800">Questions</h1>
+        <div>
+            <a asp-action="MoveQuestions" class="btn btn-sm btn-primary" style="font-weight: bold; font-size: 16px;">Move From To Another</a>
+            <a asp-action="Create" class="btn btn-sm btn-primary" style="font-weight: bold; font-size: 16px;">Create New Question</a>
+            <a asp-action="Create" asp-controller="DragDropQuestion" style="font-weight: bold; font-size: 16px;" class="btn btn-sm btn-primary">Create Drag and Drop Question</a>
+        </div>
+    </div>
+
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">Search & Filter</h6>
+        </div>
+        <div class="card-body">
+            <form method="get" action="/Question/Index">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label for="searchQuery">Search Questions:</label>
+                            <input type="text" id="searchQuery" name="searchTerm" class="form-control" value="@TempData.Peek("CurrentSearchTerm")" placeholder="Enter question content or points">
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        @{
+                            var single = TempData.Peek("CurrentStatus")?.ToString() == "SingleChoice";
+                            var multi = TempData.Peek("CurrentStatus")?.ToString() == "MultipleChoice";
+                            var dragAndDrop = TempData.Peek("CurrentStatus")?.ToString() == "DragAndDrop";
+                            var terminal = TempData.Peek("CurrentStatus")?.ToString() == "Terminal";
+                            var report = TempData.Peek("CurrentStatus")?.ToString() == "Report";
+                        }
+                        <div class="form-group">
+                            <label for="status">Question Status:</label>
+                            <select id="status" name="status" class="form-control">
+                                <option value="">All</option>
+                                @if (single)
+                                {
+                                    <option value="SingleChoice" selected>Single Choice</option>
+                                }
+                                else
+                                {
+                                    <option value="SingleChoice">Single Choice</option>
+                                }
+                                @if (multi)
+                                {
+                                    <option value="MultipleChoice" selected>Multiple Choice</option>
+                                }
+                                else
+                                {
+                                    <option value="MultipleChoice">Multiple Choice</option>
+                                }
+                                @if (dragAndDrop)
+                                {
+                                    <option value="DragAndDrop" selected>Drag and Drop</option>
+                                }
+                                else
+                                {
+                                    <option value="DragAndDrop">Drag and Drop</option>
+                                }
+                                @if (terminal)
+                                {
+                                    <option value="Terminal" selected>Terminal</option>
+                                }
+                                else
+                                {
+                                    <option value="Terminal">Terminal</option>
+                                }
+                                @if (report)
+                                {
+                                    <option value="Report" selected>Reported</option>
+                                }
+                                else
+                                {
+                                    <option value="Report">Reported</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        @{
+                            var currentCertification = TempData.Peek("CurrentCertification")?.ToString();
+                        }
+                        <div class="form-group">
+                            <label for="certification">Certification:</label>
+                            <select id="certification" name="certification" class="form-control">
+                                <option value="">All Certifications</option>
+                                @foreach (var cert in ViewBag.Certifications)
+                                {
+                                    @if (cert.Id.ToString() == currentCertification)
+                                    {
+                                        <option value="@cert.Id" selected>@cert.Title</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@cert.Id" >@cert.Title</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 d-flex align-items-end pb-3">
+                        <button type="submit" class="btn btn-primary btn-block">Search/Filter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Question List</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Content</th>
+                            <th>Type</th>
+                            <th>Point</th>
+                            <th>Image</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    @if (item.Content.Length > 60)
+                                    {
+                                        @item.Content.Substring(0, 60)
+                                        @Html.Raw(" ...")
+                                    }
+                                    else
+                                    {
+                                        @item.Content
+                                    }
+                                </td>
+                                <td>@item.Type.ToString()</td>
+                                <td>@item.Point</td>
+                                <td>
+                                    @if (item?.QuestionImages?.Count > 0 || item?.DragDropQuestion?.ImageUrl != null)
+                                    {
+                                        @if (item.Type == EQuestionType.DragAndDrop)
+                                        {
+                                            <img src="@item?.DragDropQuestion?.ImageUrl" alt="Image" style="width: 100px; height: auto;" />
+                                        }
+                                        else
+                                        {
+                                            <img src="@item.QuestionImages?.FirstOrDefault()?.ImageUrl" alt="Image" style="width: 100px; height: auto;" />
+                                            <br />
+                                            @(item?.QuestionImages?.Count > 1 ? "..." : "")
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @Html.Raw("No image in this question.")
+                                    }
+                                </td>
+                                <td style="width: 25%">
+                                    <a asp-action="Details" asp-controller="Question"
+                                       asp-route-id="@item.Id"
+                                       asp-route-pageIndex="@Model.PageIndex"
+                                       asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                       asp-route-status="@TempData.Peek("CurrentStatus")"
+                                       asp-route-certification="@TempData.Peek("CurrentCertification")"
+                                       class="btn btn-sm btn-info">Detail</a>
+
+                                    <a asp-action="Update" asp-controller="Question"
+                                       asp-route-id="@item.Id"
+                                       asp-route-pageIndex="@Model.PageIndex"
+                                       asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                       asp-route-status="@TempData.Peek("CurrentStatus")"
+                                       asp-route-certification="@TempData.Peek("CurrentCertification")"
+                                       class="btn btn-sm btn-warning">Update</a>
+
+                                    @if (item.IsReported)
+                                    {
+                                        <a asp-action="Verify" asp-controller="Question"
+                                           asp-route-id="@item.Id"
+                                           asp-route-pageIndex="@Model.PageIndex"
+                                           asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                           asp-route-status="@TempData.Peek("CurrentStatus")"
+                                           asp-route-certification="@TempData.Peek("CurrentCertification")"
+                                           class="btn btn-sm btn-secondary">Verify</a>
+                                    }
+
+                                    @if (item.IsDeleted)
+                                    {
+                                        <a asp-action="Recover" asp-controller="Question"
+                                           asp-route-id="@item.Id"
+                                           asp-route-pageIndex="@Model.PageIndex"
+                                           asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                           asp-route-status="@TempData.Peek("CurrentStatus")"
+                                           asp-route-certification="@TempData.Peek("CurrentCertification")"
+                                           class="btn btn-sm btn-success recover-button">Recover</a>
+                                        <a asp-action="Remove" asp-controller="Question"
+                                           asp-route-id="@item.Id"
+                                           asp-route-pageIndex="@Model.PageIndex"
+                                           asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                           asp-route-status="@TempData.Peek("CurrentStatus")"
+                                           asp-route-certification="@TempData.Peek("CurrentCertification")"
+                                           class="btn btn-sm btn-danger delete-button">Remove</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Delete" asp-controller="Question"
+                                           asp-route-id="@item.Id"
+                                           asp-route-pageIndex="@Model.PageIndex"
+                                           asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                           asp-route-status="@TempData.Peek("CurrentStatus")"
+                                           asp-route-certification="@TempData.Peek("CurrentCertification")"
+                                           class="btn btn-sm btn-danger delete-button">Delete</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <!-- First and Previous Buttons -->
+                        <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageIndex="1"
+                               asp-route-pageSize="@ViewBag.PageSize"
+                               asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                               asp-route-status="@TempData.Peek("CurrentStatus")"
+                               asp-route-certification="@TempData.Peek("CurrentCertification")"
+                               aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageIndex="@(Model.PageIndex - 1)"
+                               asp-route-pageSize="@ViewBag.PageSize"
+                               asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                               asp-route-status="@TempData.Peek("CurrentStatus")"
+                               asp-route-certification="@TempData.Peek("CurrentCertification")"
+                               aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <!-- Pagination Numbers with Dots Logic -->
+                        @if (Model.TotalPages > 1)
+                        {
+                            <li class="page-item @(Model.PageIndex == 1 ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pageIndex="1"
+                                   asp-route-pageSize="@ViewBag.PageSize"
+                                   asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                   asp-route-status="@TempData.Peek("CurrentStatus")"
+                                   asp-route-certification="@TempData.Peek("CurrentCertification")">
+                                    1
+                                </a>
+                            </li>
+
+                            @if (Model.PageIndex > 3)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+
+                            @for (int i = Math.Max(2, Model.PageIndex - 1); i <= Math.Min(Model.TotalPages - 1, Model.PageIndex + 1); i++)
+                            {
+                                <li class="page-item @(Model.PageIndex == i ? "active" : "")">
+                                    <a class="page-link" asp-action="Index"
+                                       asp-route-pageIndex="@i"
+                                       asp-route-pageSize="@ViewBag.PageSize"
+                                       asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                       asp-route-status="@TempData.Peek("CurrentStatus")"
+                                       asp-route-certification="@TempData.Peek("CurrentCertification")">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            @if (Model.PageIndex < Model.TotalPages - 2)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+
+                            <li class="page-item @(Model.PageIndex == Model.TotalPages ? "active" : "")">
+                                <a class="page-link" asp-action="Index"
+                                   asp-route-pageIndex="@Model.TotalPages"
+                                   asp-route-pageSize="@ViewBag.PageSize"
+                                   asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                                   asp-route-status="@TempData.Peek("CurrentStatus")"
+                                   asp-route-certification="@TempData.Peek("CurrentCertification")">
+                                    @Model.TotalPages
+                                </a>
+                            </li>
+                        }
+
+                        <!-- Next and Last Buttons -->
+                        <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageIndex="@(Model.PageIndex + 1)"
+                               asp-route-pageSize="@ViewBag.PageSize"
+                               asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                               asp-route-status="@TempData.Peek("CurrentStatus")"
+                               asp-route-certification="@TempData.Peek("CurrentCertification")"
+                               aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index"
+                               asp-route-pageIndex="@Model.TotalPages"
+                               asp-route-pageSize="@ViewBag.PageSize"
+                               asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")"
+                               asp-route-status="@TempData.Peek("CurrentStatus")"
+                               asp-route-certification="@TempData.Peek("CurrentCertification")"
+                               aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="~/js/sweetAlert.js"></script>

@@ -1,0 +1,168 @@
+﻿@model List<GetAllQuestionsFromPdfDTO>
+
+<style>
+    .points-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+        .points-container div {
+            flex: 1;
+            margin-right: 10px;
+        }
+
+            .points-container div:last-child {
+                margin-right: 0;
+            }
+
+    .remove-btn {
+        color: red;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+
+        .remove-btn:hover {
+            color: darkred;
+        }
+
+    /* Styling for deleted rows */
+    .removed-row {
+        display: none;
+    }
+
+</style>
+
+<div class="container-fluid">
+    <h2 style="color: black">Extracted Questions</h2>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Question Details</h6>
+        </div>
+        <div style="color: black;" class="card-body">
+            <!-- Form to submit questions data -->
+            <form method="post" action="/Question/SaveQuestions">
+                <input type="hidden" name="CertificationId" value="@ViewBag.CertificationId" />
+
+                <!-- Flexbox container for setting points for single and multiple choice questions -->
+                <div class="points-container">
+                    <div>
+                        <label style="color: black" for="singleChoicePoint">Set Point for Single Choice Questions:</label>
+                        <input type="number" inputmode="decimal" id="singleChoicePoint" class="form-control" onchange="setSingleChoicePoints(this.value)" min="0" step="0.1" />
+                    </div>
+                    <div>
+                        <label style="color: black" for="multipleChoicePoint">Set Point for Multiple Choice Questions:</label>
+                        <input type="number" inputmode="decimal" id="multipleChoicePoint" class="form-control" onchange="setMultipleChoicePoints(this.value)" min="0" step="0.1" />
+                    </div>
+                </div>
+
+                <!-- Save All Questions button moved to the top -->
+                <div class="mt-3 mb-3">
+                    <button type="submit" class="btn btn-success">Save All Questions</button>
+                    <a href="@Url.Action("UploadPdf", "Question")" class="btn btn-warning">Back</a>
+                </div>
+
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Question</th>
+                            <th>Point</th>
+                            <th>Variants</th>
+                            <th>Actions</th> <!-- Add column for the remove action -->
+                        </tr>
+                    </thead>
+                    <tbody id="questionsTableBody">
+                        @{
+                            var count = 0;
+                        }
+                        @for (int i = 0; i < Model.Count; i++)
+                        {
+                            count++;
+                            <tr id="question-row-@i">
+                                <td>@count</td>
+                                <td>
+                                    <!-- Editable field for question content -->
+                                    <textarea name="questions[@i].Content" class="form-control question-content">@Model[i].Content</textarea>
+                                </td>
+                                <td>
+                                    <!-- Editable field for question point, with different classes for single and multiple choice -->
+                                    <input type="number"
+                                           name="questions[@i].Point"
+                                           class="form-control @(Model[i].Variants.Count(v => v.IsCorrect) > 1 ? "multiple-choice-point" : "single-choice-point")"
+                                           value="@Model[i].Point"
+                                           step="0.1" />
+                                </td>
+                                <td>
+                                    <ol type="a">
+                                        @for (int j = 0; j < Model[i].Variants.Count; j++)
+                                        {
+                                            <li>
+                                                <input type="text" name="questions[@i].Variants[@j].Text" class="form-control variant-text" value="@Model[i].Variants[j].Text" />
+                                                <input type="checkbox" name="questions[@i].Variants[@j].IsCorrect" class="variant-correct" value="true" @(Model[i].Variants[j].IsCorrect ? "checked" : "") /> Correct
+                                            </li>
+                                        }
+                                    </ol>
+                                </td>
+                                <td>
+                                    <!-- Add a remove button for each question -->
+                                    <span class="remove-btn" onclick="removeQuestion(@i)">×</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to set the points for single choice questions
+    function setSingleChoicePoints(value) {
+        const singleChoiceInputs = document.querySelectorAll('.single-choice-point');
+        const pointValue = parseFloat(value); // Convert to float
+        singleChoiceInputs.forEach(input => {
+            input.value = pointValue;
+        });
+    }
+
+    // Function to set the points for multiple choice questions
+    function setMultipleChoicePoints(value) {
+        const multipleChoiceInputs = document.querySelectorAll('.multiple-choice-point');
+        const pointValue = parseFloat(value); // Convert to float
+        multipleChoiceInputs.forEach(input => {
+            input.value = pointValue;
+        });
+    }
+
+    function removeQuestion(index) {
+        // Find the row to remove and hide it
+        const row = document.getElementById(`question-row-${index}`);
+        if (row) {
+            row.classList.add('removed-row');
+            // Optionally remove the inputs related to the question to prevent them from being submitted
+            row.querySelectorAll('input, textarea').forEach(input => {
+                input.disabled = true; // Disable the inputs so they're not submitted
+            });
+        }
+    }
+</script>

@@ -1,0 +1,193 @@
+﻿@using AppTech.Core.Entities.Commons
+@model PaginatedQueryable<Comment>
+
+<style>
+    .custom-pagination .page-link {
+        color: #b2d235 !important; /* Text color for pagination numbers */
+        border: 1px solid #d3d3d3; /* Border color */
+    }
+
+    .custom-pagination .page-item.active .page-link {
+        background-color: #b2d235 !important; /* Active page background color */
+        border-color: #b2d235 !important; /* Active page border color */
+        color: white !important; /* Active page text color */
+    }
+
+    .custom-pagination .page-item .page-link:hover {
+        color: #8dbf29 !important; /* Hover color for pagination links */
+    }
+
+    .custom-pagination .page-item.disabled .page-link {
+        color: #cccccc; /* Disabled button color */
+    }
+
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-4 text-gray-800">Comments Management</h1>
+    </div>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            <h6 class="m-0 font-weight-bold text-primary">Search & Filter</h6>
+        </div>
+        <div class="card-body">
+            <!-- Search & Filter Form -->
+            <form method="get" asp-action="Index">
+                <div class="row mb-3">
+                    <!-- Search Bar for Comment Subject -->
+                    <div class="col-md-4">
+                        <div class="input-group">
+                            <input type="text" name="searchTerm" class="form-control" placeholder="Search by Comment Subject" value="@TempData.Peek("CurrentSearchTerm")" />
+                        </div>
+                    </div>
+
+                    <!-- Filter by User -->
+                    <div class="col-md-3">
+                        <input type="text" name="userFilter" class="form-control" placeholder="Filter by User / Full Name" value="@TempData.Peek("CurrentUserFilter")" />
+                    </div>
+
+                    <!-- Filter by Certification -->
+                    <div class="col-md-3">
+                        <input type="text" name="certificationFilter" class="form-control" placeholder="Filter by Certification Title" value="@TempData.Peek("CurrentCertificationFilter")" />
+                    </div>
+
+                    <!-- Filter Button -->
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-block">Filter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Comments Table -->
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark text-center">
+            <tr>
+                <th>Subject</th>
+                <th>User</th>
+                <th>Certification</th>
+                <th>Submission Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Items != null && Model.Items.Any())
+            {
+                @foreach (var item in Model.Items)
+                {
+                    <tr style="@((item.IsDeleted) ? "color: red;" : "")">
+                        <td style="word-break: break-all; width: 20;">@item.Subject</td>
+                        <td style="text-align: center; width: 20%;">@(item.User.FullName ?? item.User.UserName)</td>
+                        <td style="text-align: center; width: 10%;">@item.Certification.Title</td>
+                        <td style="text-align: center; width: 10%;">@item.CreatedOn?.ToString("MM/dd/yyyy HH:mm")</td>
+                        <td style="text-align: center; width: 30%;">
+                            <!-- Ban/Unban Logic -->
+                            @if (item.User.IsBanned)
+                            {
+                                <a asp-action="UnBanUser" asp-route-id="@item.UserId" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-success">UnBan</a>
+                            }
+                            else
+                            {
+                                <a asp-action="BanUser" asp-route-id="@item.UserId" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-dark">Ban</a>
+                            }
+
+                            @if (item.IsDeleted)
+                            {
+                                <a asp-action="Recover" asp-route-id="@item.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-success recover-button">Recover</a>
+                                <a asp-action="Remove" asp-route-id="@item.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-danger delete-button">Remove</a>
+                            }
+                            else
+                            {
+                                <a asp-action="Delete" asp-route-id="@item.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-danger delete-button">Delete</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center">No comments found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="custom-pagination">
+        <ul class="pagination justify-content-center">
+            <!-- First and Previous Buttons -->
+            <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageIndex="1" asp-route-pageSize="@ViewBag.PageSize" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageIndex="@(Model.PageIndex - 1)" asp-route-pageSize="@ViewBag.PageSize" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            <!-- Pagination Numbers with Dots Logic -->
+            @if (Model.TotalPages > 1)
+            {
+                <li class="page-item @(Model.PageIndex == 1 ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageIndex="1" asp-route-pageSize="@ViewBag.PageSize">1</a>
+                </li>
+
+                @if (Model.PageIndex > 3)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+
+                @for (int i = Math.Max(2, Model.PageIndex - 1); i <= Math.Min(Model.TotalPages - 1, Model.PageIndex + 1); i++)
+                {
+                    <li class="page-item @(Model.PageIndex == i ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-pageIndex="@i" asp-route-pageSize="@ViewBag.PageSize">@i</a>
+                    </li>
+                }
+
+                @if (Model.PageIndex < Model.TotalPages - 2)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+
+                <li class="page-item @(Model.PageIndex == Model.TotalPages ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageIndex="@Model.TotalPages" asp-route-pageSize="@ViewBag.PageSize">@Model.TotalPages</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageIndex="@(Model.PageIndex + 1)" asp-route-pageSize="@ViewBag.PageSize" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageIndex="@Model.TotalPages" asp-route-pageSize="@ViewBag.PageSize" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Include SweetAlert2 and your custom JS file -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="~/js/sweetAlert.js"></script>

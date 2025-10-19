@@ -1,0 +1,350 @@
+﻿@model UserDetailsViewModel
+
+<style>
+    .btn-group button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+
+    .btn-group {
+        gap: 10px;
+    }
+</style>
+<style>
+    .pagination .page-link {
+        border: 1px solid #ccc;
+        color: #b2d235;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #b2d235;
+        color: white;
+        border-color: #b2d235;
+    }
+
+    .pagination .page-link:hover {
+        background-color: #e6f0d8;
+        color: #b2d235;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background-color: #f8f9fa;
+        color: #b2d235;
+        border: 1px solid #ccc;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="h3 mb-4 font-weight-bold" style="color: #b2d235;">User Details</h1>
+        </div>
+    </div>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="row">
+        <!-- User Profile Information -->
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-white" style="background-color: #b2d235;">
+                    <h6 class="m-0 font-weight-bold">Profile Information</h6>
+                </div>
+                <div class="card-body text-center">
+                    @if (Model.User.ImageUrl != null)
+                    {
+                        <img src="@Model.User.ImageUrl" alt="User Image" class="img-fluid img-thumbnail mb-3" style="max-width: 200px;" />
+                    }
+                    <h5 class="mt-3 text-dark font-weight-bold">@Model.User.FullName</h5>
+                    <p class="text-muted">@Model.User.UserName</p>
+                    <p class="text-muted">@Model.User.Email</p>
+                    <p class="text-primary font-weight-bold">Balance: @Model.User.Balance.ToString("C")</p>
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-white" style="background-color: #b2d235;">
+                    <h6 class="m-0 font-weight-bold">Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-start align-items-center flex-wrap">
+                        <!-- Ban/Unban Button -->
+                        @if (Model.User.IsBanned)
+                        {
+                            <form method="post" asp-action="UnBanUser" asp-route-id="@Model.User.Id" class="d-inline">
+                                <button type="submit" class="btn btn-success mx-2 mb-2">Unban User</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form method="post" asp-action="BanUser" asp-route-id="@Model.User.Id" class="d-inline">
+                                <button type="submit" class="btn btn-danger mx-2 mb-2">Ban User</button>
+                            </form>
+                        }
+
+                        <!-- Update Balance Button -->
+                        <a asp-action="UpdateBalance" asp-route-id="@Model.User.Id" class="btn btn-info mx-2 mb-2">Update Balance</a>
+
+                        @if (Model.User.OnExam)
+                        {
+                            <form method="post" asp-action="UnExamUser" asp-route-id="@Model.User.Id" class="d-inline">
+                                <button type="submit" class="btn btn-danger mx-2 mb-2">Take the exam offline</button>
+                            </form>
+                        }
+                        @if (Model.User.IsOnline)
+                        {
+                            <form method="post" asp-action="UnOnlineUser" asp-route-id="@Model.User.Id" class="d-inline">
+                                <button type="submit" class="btn btn-danger mx-2 mb-2">Take the user offline</button>
+                            </form>
+                        }
+
+                    </div>
+
+                    <!-- Back Button -->
+                    <div class="mt-3 mx-2">
+                        <a asp-action="Index" asp-controller="User" class="btn btn-warning">Back to List</a>
+                    </div>
+                </div>
+            </div>
+            <!-- User's Roles -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-white" style="background-color: #b2d235;">
+                    <h6 class="m-0 font-weight-bold">User Roles</h6>
+                </div>
+                <div class="card-body" style="color: black;">
+                    <ul>
+                        @foreach (var role in Model.UserRoles)
+                        {
+                            <li>
+                                @role
+                                <!-- Remove Role Button -->
+                                <form method="post" asp-action="RemoveRole" asp-route-id="@Model.User.Id" asp-route-role="@role" class="d-inline">
+                                    <button type="submit" style="font-size: 5px;" class="btn btn-sm btn-danger mb-1">X</button>
+                                </form>
+                            </li>
+                        }
+                    </ul>
+
+                    <!-- Add Role Form -->
+                    <form method="post" asp-action="AssignRole" asp-route-id="@Model.User.Id">
+                        <div class="form-group">
+                            <label for="roleSelect">Add Role:</label>
+                            <select id="roleSelect" name="role" class="form-control">
+                                @foreach (var role in Model.AllRoles.Except(Model.UserRoles))
+                                {
+                                    <option value="@role">@role</option>
+                                }
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-success">Add Role</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Account Information -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-white" style="background-color: #b2d235;">
+                    <h6 class="m-0 font-weight-bold">Account Information</h6>
+                </div>
+                <div class="card-body">
+                    <table class="table table-hover table-bordered">
+                        <tr>
+                            <th class="bg-light">Username</th>
+                            <td>@Model.User.UserName</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Email</th>
+                            <td>
+                                @(Model.User.EmailConfirmed ? $"{Model.User.Email} (Email Confirmed)"
+                                    : $"{Model.User.Email} (Email Not Confirmed)")
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Phone Number</th>
+                            <td>@(Model.User.PhoneNumber != null ? $"{Model.User.PhoneNumber}" : "Phone number not provided")</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Is Online</th>
+                            <td>@(Model.User.IsOnline ? "Yes" : "No")</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Last Activity</th>
+                            <td>@Model.User.LastActivity?.ToString("MM/dd/yyyy HH:mm")</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">On Exam</th>
+                            <td>@(Model.User.OnExam ? "Yes" : "No")</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Last Exam Activity</th>
+                            <td>@Model.User.LastExamActivity?.ToString("MM/dd/yyyy HH:mm")</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Is Banned</th>
+                            <td>@(Model.User.IsBanned ? "Yes" : "No")</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Public IP Access Failed</th>
+                            <td>@Model.User.PublicIpAddressAccessFailed</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Public IP Addresses</th>
+                            <td>
+                                @if (Model.User.UserPublicIpAddresses != null && Model.User.UserPublicIpAddresses.Any())
+                                {
+                                    <ul>
+                                        @foreach (var ipAddress in Model.User.UserPublicIpAddresses)
+                                        {
+                                            <li style="font-size: 18px;">
+                                                @ipAddress.PublicIpAddress
+                                                <!-- Delete button -->
+                                                <form method="post" asp-action="DeletePublicIp" asp-route-userId="@Model.User.Id" asp-route-ipId="@ipAddress.Id" class="d-inline">
+                                                    <button type="submit" style="font-size: 5px;" class="btn btn-sm btn-danger mb-1" onclick="return confirm('Are you sure you want to delete this IP address?')">X</button>
+                                                </form>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <span>No IP addresses available</span>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-1">
+                <div class="card-header text-white" style="background-color: #b2d235;">
+                    <h6 class="m-0 font-weight-bold">Exam Results</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.ExamResults != null && Model.ExamResults.Any())
+                    {
+                        <table class="table table-bordered">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Exam Code</th>
+                                    <th>Exam Title</th>
+                                    <th>User Score</th>
+                                    <th>Is Passed</th>
+                                    <th>Bought On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var result in Model.ExamResults)
+                                {
+                                    <tr>
+                                        <form method="post" asp-action="UpdateExamResult" asp-controller="User">
+                                        <td>@result.Exam.Code</td>
+                                        <td>@result.Exam?.Certification.Title</td>
+                                        <td>
+                                            <input type="hidden" name="examResultId" value="@result.Id" />
+                                            <input type="number" name="newScore" value="@result.UserScore" class="form-control" />
+                                        </td>
+                                        <td>
+                                            <select name="isPassed" class="form-control">
+                                                    @if (result.IsPassed == true)
+                                                    {
+                                                    <option value="true" selected>Yes</option>
+                                                    <option value="false">No</option>
+                                                    }
+                                                    else
+                                                    {
+                                                    <option value="true">Yes</option>
+                                                    <option value="false" selected>No</option>
+                                                    }
+                                            </select>
+                                        </td>
+                                        <td>@result.CreatedOn?.ToString("MM/dd/yyyy HH:mm")</td>
+                                        <td>
+                                            <button type="submit" class="btn btn-success">Save</button>
+                                        </td>
+                                        </form>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-route-id="@Model.User.Id"
+                                       asp-route-pageIndex="@(Model.PageIndex - 1)"
+                                       asp-route-pageSize="@ViewBag.PageSize">&laquo;</a>
+                                </li>
+
+                                @if (Model.PageIndex > 3)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           asp-route-id="@Model.User.Id"
+                                           asp-route-pageIndex="1"
+                                           asp-route-pageSize="@ViewBag.PageSize">1</a>
+                                    </li>
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+
+                                @for (int i = Math.Max(1, Model.PageIndex - 2); i <= Math.Min(Model.TotalPages, Model.PageIndex + 2); i++)
+                                {
+                                    <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                                        <a class="page-link"
+                                           asp-route-id="@Model.User.Id"
+                                           asp-route-pageIndex="@i"
+                                           asp-route-pageSize="@ViewBag.PageSize">@i</a>
+                                    </li>
+                                }
+
+                                @if (Model.PageIndex < Model.TotalPages - 2)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link"
+                                           asp-route-id="@Model.User.Id"
+                                           asp-route-pageIndex="@Model.TotalPages"
+                                           asp-route-pageSize="@ViewBag.PageSize">@Model.TotalPages</a>
+                                    </li>
+                                }
+
+                                <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                                    <a class="page-link"
+                                       asp-route-id="@Model.User.Id"
+                                       asp-route-pageIndex="@(Model.PageIndex + 1)"
+                                       asp-route-pageSize="@ViewBag.PageSize">&raquo;</a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                    }
+                    else
+                    {
+                        <p class="text-muted">No exam results found for this user.</p>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

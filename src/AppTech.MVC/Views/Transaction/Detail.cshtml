@@ -1,0 +1,112 @@
+﻿@model Transaction
+<div class="container-fluid">
+    <div style="color: black">
+        <div class="row">
+            <div class="col-md-12">
+                <h2>Transaction Detail</h2>
+                <hr />
+            </div>
+        </div>
+        <div class="col-md-12 text-center">
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <label style="font-weight: bold">User Fullname:</label>
+                <p>@(Model.User?.FullName ?? Model.User.UserName)</p>
+            </div>
+            <div class="col-md-6">
+                <label style="font-weight: bold">User Email:</label>
+                <p>@Model.User.Email</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <label style="font-weight: bold">Order ID:</label>
+                <p>@Model.OrderId</p>
+            </div>
+            <div class="col-md-6">
+                <label style="font-weight: bold">Session ID:</label>
+                <p>@Model.SessionId</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <label style="font-weight: bold">Last Updated:</label>
+                <p>@Model.UpdatedOn.ToString("yyyy-MM-dd HH:mm:ss")</p>
+            </div>
+            <div class="col-md-6">
+                <label style="font-weight: bold">Amount:</label>
+                <p>@Model.Amount.ToString("C")</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <label style="font-weight: bold">Type:</label>
+                <p>@Model.Type.ToString()</p>
+            </div>
+            <div class="col-md-6">
+                <label style="font-weight: bold">Status:</label>
+                <p>@Model.Status.ToString()</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <label style="font-weight: bold">Is Increased:</label>
+                @if (Model.Certification is not null)
+                {
+                    <p>@(Model.IsIncreased ? "Balance Increased" : "Certification Purchased - " + Model.Certification.Title)</p>
+                }
+                else
+                {
+                    <p>Balance Increased</p>
+                }
+            </div>
+            @if(!(Model.Status == EOrderStatus.REFUNDED))
+            {
+                <div class="col-md-6">
+                    <form asp-action="Refund" method="get">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger">Refund Transaction</button>
+                    </form>
+                </div>
+            }
+        </div>
+
+        @if (Model.ResponseBody is not null)
+        {
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label style="font-weight: bold" for="Message">Response Body</label>
+                        <br />
+                        <textarea id="Message" class="form-control" rows="5" readonly>@Model.ResponseBody</textarea>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row">
+            <div class="col-md-12">
+                <a href="@Url.Action("Index", "Transaction")" class="btn btn-primary mb-3">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,117 @@
+﻿@model QuestionDTO
+@{
+    ViewBag.Title = "Question Details";
+}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Question Details</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Question Information</h6>
+        </div>
+        <div class="card-body" style="color: black">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Certification:</dt>
+                        <dd class="col-sm-8">@Model.Certification?.Title</dd>
+
+                        <dt class="col-sm-4">Content:</dt>
+                        <dd class="col-sm-8">@Model.Content</dd>
+
+                        <dt class="col-sm-4">Point:</dt>
+                        <dd class="col-sm-8">@Model.Point</dd>
+
+                        <dt class="col-sm-4">Type:</dt>
+                        <dd class="col-sm-8">@Model.Type</dd>
+
+                        @if(Model.Server is not null)
+                        {
+                            <dt class="col-sm-4">Server number or Introduction(0):</dt>
+                            <dd class="col-sm-8">@Model.Server</dd>
+                        }
+
+                        @if (Model.IsReported)
+                        {
+                            <dt class="col-sm-4">Reported User Info:</dt>
+                            <dd class="col-sm-8">@Model.ReportFrom</dd>
+                        }
+                    </dl>
+                </div>
+
+                <div class="col-md-6">
+                    @if (Model.QuestionImages.Any())
+                    {
+                        <div class="form-group">
+                            <label>Images:</label>
+                            <div class="d-flex flex-wrap">
+                                @foreach (var image in Model.QuestionImages)
+                                {
+                                    <img src="@image.ImageUrl" class="img-thumbnail m-1" alt="Question Image" style="width: 200px; height: 150px; object-fit: cover;">
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mt-4">
+                @if (Model.DragDropQuestion != null)
+                {
+                    <h5 class="h6 mb-3 text-gray-800">Drag and Drop Question:</h5>
+
+                    <div>
+                        <img src="@Model.DragDropQuestion.ImageUrl" class="img-fluid mb-3" alt="Drag and Drop Image" style="max-width: 100%; height: auto;" />
+
+                        <h6>Drop Zones:</h6>
+                        <div>
+                            @foreach (var dropZone in Model.DragDropQuestion.dropZones)
+                            {
+                                <p>Drop Zone (ID: @dropZone.Id): X = @dropZone.X, Y = @dropZone.Y, Width = @dropZone.Width, Height = @dropZone.Height</p>
+                            }
+                        </div>
+
+                        <h6>Drag Variants:</h6>
+                        <div class="d-flex flex-wrap">
+                            @foreach (var dragVariant in Model.DragDropQuestion.dragVariants)
+                            {
+                                <div class="p-2">
+                                    <img src="@dragVariant.ImageUrl" class="img-thumbnail" alt="Drag Variant" style="width: max-content; height: 50px; object-fit: cover;">
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <h5 class="h6 mb-3 text-gray-800">Variants:</h5>
+                    @foreach (var variant in Model.DashVariants)
+                    {
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <p>Text: @variant.Text</p>
+                                <p style="margin-bottom: -5px;">Is Correct: @(variant.IsCorrect ? "Yes" : "No")</p>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+
+            <a href="@Url.Action("Index", new { pageIndex = Model.PageIndex })" class="btn btn-primary">Back to List</a>
+        </div>
+    </div>
+</div>

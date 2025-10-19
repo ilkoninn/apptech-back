@@ -1,0 +1,232 @@
+﻿@model PaginatedQueryable<UserRolesViewModel>
+
+<style>
+    .custom-pagination .page-link {
+        color: #b2d235 !important;
+        border: 1px solid #d3d3d3;
+    }
+
+    .custom-pagination .page-item.active .page-link {
+        background-color: #b2d235 !important; /* Active page background color */
+        border-color: #b2d235 !important; /* Active page border color */
+        color: white !important; /* Active page text color */
+    }
+
+    .custom-pagination .page-item .page-link:hover {
+        color: #8dbf29 !important; /* Hover color for pagination links */
+    }
+
+    .custom-pagination .page-item.disabled .page-link {
+        color: #cccccc; /* Disabled button color */
+    }
+</style>
+<style>
+    @@media (min-width: 768px) { /* Only apply adjustments on medium devices and up */
+        .form-group label {
+            margin-bottom: 0.5rem; /* Reduce space below the label if necessary */
+        }
+    }
+</style>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h2 style="color:black" class="mb-4">Users Management</h2>
+    </div>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <!-- Search & Filter Form -->
+    <form method="get" asp-action="Index">
+        <div class="row mb-3">
+            <!-- Search Bar -->
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="text" name="searchTerm" class="form-control" placeholder="Search by Username or Email" value="@TempData.Peek("CurrentSearchTerm")" />
+                </div>
+            </div>
+
+            <!-- Role Filter -->
+            <div class="col-md-3">
+                <select name="role" class="form-control">
+                    <option value="">All Roles</option>
+                    @foreach (var role in new List<string> { "Admin", "Student", "Moderator", "Teacher" }) // Adjust roles accordingly
+                    {
+                        @if (role == TempData.Peek("CurrentRole")?.ToString())
+                        {
+                            <option value="@role" selected>@role</option>
+                        }
+                        else
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-md-3">
+                <select name="status" class="form-control">
+                    <option value="">All Statuses</option>
+                    @if (TempData.Peek("CurrentStatus")?.ToString() == "active")
+                    {
+                        <option value="active" selected>Active</option>
+                    }
+                    else
+                    {
+                        <option value="active">Active</option>
+                    }
+                    @if (TempData.Peek("CurrentStatus")?.ToString() == "banned")
+                    {
+                        <option value="banned" selected>Banned</option>
+                    }
+                    else
+                    {
+                        <option value="banned">Banned</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-block">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Users Table -->
+    <table class="table table-bordered table-striped">
+        <thead class="thead-dark text-center">
+            <tr>
+                <th>User / Full Name</th>
+                <th>Email</th>
+                <th>Roles</th>
+                <th>Status</th>
+                <th>Balance</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Items != null && Model.Items.Any())
+            {
+                @foreach (var userModel in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            @(userModel.User.FullName is not null ? $"{userModel.User.UserName} / {userModel.User.FullName}" :
+                                $"{userModel.User.UserName}")
+                        </td>
+                        <td>@userModel.User.Email</td>
+                        <td>
+                            @foreach (var role in userModel.Roles)
+                            {
+                                <span class="badge badge-info">@role</span>
+                            }
+                        </td>
+                        <td>
+                            @if (userModel.User.IsBanned)
+                            {
+                                <span class="badge badge-danger">Banned</span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-success">Active</span>
+                            }
+                        </td>
+                        <td>@userModel.User.Balance.ToString("C")</td>
+                        <td>
+                            <a asp-action="Details" asp-route-id="@userModel.User.Id" class="btn btn-info btn-sm">Details</a>
+                            <!-- Ban/Unban Logic -->
+                            @if (userModel.User.IsBanned)
+                            {
+                                <form method="post" asp-action="UnBanUser" asp-route-id="@userModel.User.Id" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-success">Unban</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <form method="post" asp-action="BanUser" asp-route-id="@userModel.User.Id" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-warning">Ban</button>
+                                </form>
+                            }
+                            <a asp-action="DeleteUser" asp-route-id="@userModel.User.Id" type="submit" class="btn btn-danger btn-sm delete-button">Remove</a> 
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center">No users found.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="custom-pagination">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageIndex="1" asp-route-pageSize="@ViewBag.PageSize" asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")" asp-route-role="@TempData.Peek("CurrentRole")" asp-route-status="@TempData.Peek("CurrentStatus")" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageIndex="@(Model.PageIndex - 1)" asp-route-pageSize="@ViewBag.PageSize" asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")" asp-route-role="@TempData.Peek("CurrentRole")" asp-route-status="@TempData.Peek("CurrentStatus")" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+
+            @if (Model.TotalPages > 1)
+            {
+                <li class="page-item @(Model.PageIndex == 1 ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageIndex="1" asp-route-pageSize="@ViewBag.PageSize" asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")" asp-route-role="@TempData.Peek("CurrentRole")" asp-route-status="@TempData.Peek("CurrentStatus")">1</a>
+                </li>
+
+                @if (Model.PageIndex > 3)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+
+                @for (int i = Math.Max(2, Model.PageIndex - 1); i <= Math.Min(Model.TotalPages - 1, Model.PageIndex + 1); i++)
+                {
+                    <li class="page-item @(Model.PageIndex == i ? "active" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-pageIndex="@i" asp-route-pageSize="@ViewBag.PageSize" asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")" asp-route-role="@TempData.Peek("CurrentRole")" asp-route-status="@TempData.Peek("CurrentStatus")">@i</a>
+                    </li>
+                }
+
+                @if (Model.PageIndex < Model.TotalPages - 2)
+                {
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                }
+
+                <li class="page-item @(Model.PageIndex == Model.TotalPages ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageIndex="@Model.TotalPages" asp-route-pageSize="@ViewBag.PageSize" asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")" asp-route-role="@TempData.Peek("CurrentRole")" asp-route-status="@TempData.Peek("CurrentStatus")">@Model.TotalPages</a>
+                </li>
+            }
+
+            <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageIndex="@(Model.PageIndex + 1)" asp-route-pageSize="@ViewBag.PageSize" asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")" asp-route-role="@TempData.Peek("CurrentRole")" asp-route-status="@TempData.Peek("CurrentStatus")" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="Index" asp-route-pageIndex="@Model.TotalPages" asp-route-pageSize="@ViewBag.PageSize" asp-route-searchTerm="@TempData.Peek("CurrentSearchTerm")" asp-route-role="@TempData.Peek("CurrentRole")" asp-route-status="@TempData.Peek("CurrentStatus")" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+<!-- Include SweetAlert2 and your custom JS file -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="~/js/sweetAlert.js"></script>

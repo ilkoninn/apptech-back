@@ -1,0 +1,127 @@
+
+07/08/2004
+23:düşündüm düşündüm düşündüm exam mentiqi məncə düzdü + vaxtım qalmadı nəsə sorun var olm crudlarda exam falan çalışmadı ama məncə çalışsa hamısı okeydi
+---------------------------------------------------------------------
+00:59 04.08.2024
+ilkonin: API-lar uzerinde deyisiklikler etdim. Hamisini yeniledim, ve front-un istediyi formata getirdim.
+
+---------------------------------------------------------------------
+29/07/2024 7:06 am
+23: amk Google login bitdi.
+---------------------------------------------------------------------
+
+28.07.2024 12:50 am
+M: 0e105496-5834-4c83-8601-cc7198ad9dd6 <- UserID
+---------------------------------------------------------------------
+
+24/07/2024 1:56 pm
+23: Birdə registerdə sorun var işləmir ona baxacam axşam
+23: Google Login hazırdı, ama necə işləyir bilmirəm, onu frantla əlaqədə biləcəyik yəqin ama maraqlı görsənir ehe
+23: Birincisi ogulsan. Zordu hərşey
+---------------------------------------------------------------------
+
+23.07.2024 23:32
+ilkonin: Exam ve ExamTranslation CRUD-lari yenilendi ve Company, Certification kimi testingleri hell olundu
+ilkonin: News ve NewsTranslation eynile bitdi(Bitmis modelleri DbSet etmisem ordan anlaya bilersen).
+ilkonin: Artiq Internal ve External Services anlayislari var, yeni databaza ile elaqedar olacaq servisler internalda yazilacaq, lakin server, mail ve s. diger tipde servis anlayislari ise Externalda yazilacaq.
+ilkonin: FAQ eynile bitdi. Yalniz son yazdigim, News, NewsTranslation, FAQ modellerinin API-larini yoxlamadim, amma mence hamisi eyni qayda ile yazilib deye problem olmaz deye dusunurem. Yene de bilmek olmaz :D
+---------------------------------------------------------------------
+
+23.07.2024 13:53 pm
+ilkonin: Company modelinin CRUD-nın testing-i bitib, yəni artıq Business və DAL tərəfində heleki dəyişikliklər etməyə ehtiyac yoxdu.
+ilkonin: CompanyTranslation modelide eynili bitdi.
+ilkonin: Yeni response DTO-lar yaradildi(Company, CompanyTranslation).
+ilkonin: Company ve CompanyTranslation-da mueyyen reformlar edildi ve kodlar yeniden dizayn edildi. 
+ilkonin: Base kodlarda(Handler, GlobalException) deyisiklikler edildi.
+ilkonin: Certification ve CertificationTranslation da eyni sekilde bitdi(Deyisiklikler, Testler).
+
+---------------------------------------------------------------------
+
+	Models Necessary To Create:
+
+22/07/24 12:22
+23: Bundan sonra yuxarı ilə yaz hər dəfə aşağı verməyək yuxarıdan sıralansın eehheheh 
+23: Mahnı zordu
+23: Çox vaxtım yoxdu deyə tam baxa bilmədim axşam baxacam
+23: Base image upload işləyir yoxsa yox bilmirəm çünki açılmır proyekt serverə görə
+>>>>>>> 9573c6c5539560240f69d6ef83017f352e564248
+
+17/07/24 12:55
+Ilkonin: Mahni hardansa tanisdiye mene, ele bil qulaq asmisiq
+Ilkonin: Buda ela mahnidi qulaq asarsan, YouTube Link
+Ilkonin: Ayə o boyda BaseEntityValidator yazmışam, ondan istifadə etttt
+Ilkonin: birdə bu poxları yazanda nolar amma nolar scoped elə, 40 dəqiqədi eyni errorları çözməyə çalışıram 😡
+
+17/07/25 05:05
+23: File manageri check etdim, bir-iki updatelər elədim. Ümumi struktur isə yerində qaldı.
+23: Birdə FAQ, News, Exam modellərinin translationu bitdi, Yəni ümumi olaraq mother fucking MultipleTranslation is done amk.
+23: YouTube Link
+23: təzə tapmışam çox zor mahnıdı 🎶🎶🎶🎶🎶🎶🎶🎶🎶🎶🎶🎶🎶
+
+16/07/24 01:03
+Ilkonin: File Manager-i check edərsən orada dəyişikliklər etdik. Artıq online olaraq MySQL və Şəkil uploadına qoşula bilirik. Sadəcə bundan sonra API-lar yazmaq lazımdır, frontcular üçün.
+
+16/07/24 21:26
+Ilkonin: Company kimi Certification-da bitdi, sadəcə MySQL method-unda prob var idi. İnşallah o server ilə əlaqə quranda problem yaratmaz bizim üçün. Kodları da reform etdim. Şuan məncə bildiyimiz logiclərə əsasən Certification və Company bitmiş sayılır.
+
+16/07/24 13:53
+Ilkonin: Mahniya qulaq asdim bombadi, eyni kodlarin kimi >_<
+Ilkonin: Hoca men Company ve CompanyTranslation-nın modellərini yazdım. Hamısını da reform etdim zəhmət olmasa baxarsan. Birdə bundan sonra nə yazsan ordakı yazdığım üsula əsasən yazarsan da xahiş <3
+Qeyd:
+
+Nələr dəyişdi:
+
+DTO-lar artıq öz translation-larını yanlarında saxlayır
+Validator-lar öz translation-larını yanlarında saxlayır
+Model-lər öz translation-larını yanlarında saxlayır
+Handler-lar yazılmalıdır və Handler-lar CRUD prosesindən qabaq yoxlanılmalıdır
+Hər bir model üçün translation və normal service yazılmalıdır
+Özün Company ilə bağlı hər şeyə baxanda başa düşəcəksən zatən, sadəcə yazdım ki, ən azından hara fikir verməlisən. Birdə dediyim kimi struktura da uysan bomba OĞLANSAN!!!!
+
+16/07/24
+23: Translation məntiqini yazdım amına koyim saatlardı üstündəydim alındı axırda ama çox uzun çəkdi məntiqini hazırlamağım deyə sadəcə companyni çatdırdım.
+23: Certificationda nəsə sorun var işləmədi aq
+23: YouTube Link
+23: Muq mahnidi
+
+15/07/24
+23: ContactUs, Faq, GiftCard, Statistics hazırdı.
+23: Ama bunları test edə bilmədim çünki proyekti çalıştıra bilmədim, yəqin server bağlıdı ona görə.
+
+17/07/24 05:05
+23: File Manager-i check etdim, bir-iki updatelər elədim. Ümumi struktur isə yerində qaldı.
+23: Birdə FAQ, News, Exam modellərinin translationu bitdi, Yəni ümumi olaraq mother fucking MultipleTranslation is done amk.
+23: YouTube Link
+23: təzə tapmışam çox zor mahnıdı 🎶🎶🎶🎶🎶🎶🎶🎶🎶🎶🎶🎶🎶
+
+17/07/24 12:55
+Ilkonin: Mahni hardansa tanisdiye mene, ele bil qulaq asmisiq
+Ilkonin: Buda ela mahnidi qulaq asarsan, YouTube Link
+Ilkonin: Ayə o boyda BaseEntityValidator yazmışam, ondan istifadə etttt
+Ilkonin: birdə bu poxları yazanda nolar amma nolar scoped elə, 40 dəqiqədi eyni errorları çözməyə çalışıram 😡
+
+17/07/24 01:03
+Ilkonin: File Manager-i check edərsən orada dəyişikliklər etdik. Artıq online olaraq MySQL və Şəkil uploadına qoşula bilirik. Sadəcə bundan sonra API-lar yazmaq lazımdır, frontcular üçün.
+
+16/07/24 21:26
+Ilkonin: Company kimi Certification-da bitdi, sadəcə MySQL method-unda prob var idi. İnşallah o server ilə əlaqə quranda problem yaratmaz bizim üçün. Kodları da reform etdim. Şuan məncə bildiyimiz logiclərə əsasən Certification və Company bitmiş sayılır.
+
+16/07/24 13:53
+Ilkonin: Mahniya qulaq asdim bombadi, eyni kodlarin kimi >_<
+Ilkonin: Hoca men Company ve CompanyTranslation-nın modellərini yazdım. Hamısını da reform etdim zəhmət olmasa baxarsan. Birdə bundan sonra nə yazsan ordakı yazdığım üsula əsasən yazarsan da xahiş <3
+Qeyd:
+
+Nələr dəyişdi:
+
+DTO-lar artıq öz translation-larını yanlarında saxlayır
+Validator-lar öz translation-larını yanlarında saxlayır
+Model-lər öz translation-larını yanlarında saxlayır
+Handler-lar yazılmalıdır və Handler-lar CRUD prosesindən qabaq yoxlanılmalıdır
+Hər bir model üçün translation və normal service yazılmalıdır
+Özün Company ilə bağlı hər şeyə baxanda başa düşəcəksən zatən, sadəcə yazdım ki, ən azından hara fikir verməlisən. Birdə dediyim kimi struktura da uysan bomba OĞLANSAN!!!!
+
+16/07/24
+23: Translation məntiqini yazdım amına koyim saatlardı üstündəydim alındı axırda ama çox uzun çəkdi məntiqini hazırlamağım deyə sadəcə companyni çatdırdım.
+23: Certificationda nəsə sorun var işləmədi aq
+23: YouTube Link
+23: Muq mahnidi

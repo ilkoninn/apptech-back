@@ -1,0 +1,156 @@
+﻿@model PaginatedQueryable<ExamResult>
+<style>
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color);
+        border-color: var(--primary-color-dark);
+        color: white;
+    }
+
+    .pagination .page-link {
+        color: var(--primary-color);
+    }
+
+        .pagination .page-link:hover {
+            background-color: var(--primary-color);
+            color: var(--primary-color-dark);
+        }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-2 text-gray-800">Exam Results</h1>
+        <div>
+            <form method="get" id="searchForm">
+                <input type="text" id="searchInput" name="query" class="form-control" placeholder="Search by Exam, User, or Droplet" style="width: 300px; display: inline-block;" value="@Context.Request.Query["query"]">
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Exam Results List</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Exam</th>
+                            <th>User</th>
+                            <th>Date</th>
+                            <th>Droplet</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsTable">
+                        @foreach (var result in Model?.Items)
+                        {
+                            <tr>
+                                <td>@result?.Exam?.Code</td>
+                                <td>@result?.User?.UserName</td>
+                                <td>@result?.CreatedOn.GetValueOrDefault().ToString("yyyy-MM-dd")</td>
+                                <td>
+                                    @if (result.Droplets != null && result.Droplets.Any())
+                                    {
+                                        @string.Join(", ", result.Droplets.Select(d => d.ProjectId))
+                                    }
+                                    else
+                                    {
+                                        <span>No droplets</span>
+                                    }
+                                </td>
+                                <td>
+                                    <a asp-action="Update" asp-controller="ExamResult" asp-route-id="@result.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-warning">Update</a>
+                                    @if (result.IsDeleted)
+                                    {
+                                        <a asp-action="Recover" asp-controller="ExamResult" asp-route-id="@result.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-success recover-button">Recover</a>
+                                        <a asp-action="Remove" asp-controller="ExamResult" asp-route-id="@result.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-danger delete-button">Remove</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Delete" asp-controller="ExamResult" asp-route-id="@result.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-danger delete-button">Delete</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                        <a href="#" class="page-link" data-page="1">&laquo;&laquo;</a>
+                    </li>
+                    <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                        <a href="#" class="page-link" data-page="@(Model.PageIndex - 1)">&laquo;</a>
+                    </li>
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(Model.PageIndex == i ? "active" : "")">
+                            <a href="#" class="page-link" data-page="@i">@i</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                        <a href="#" class="page-link" data-page="@(Model.PageIndex + 1)">&raquo;</a>
+                    </li>
+                    <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                        <a href="#" class="page-link" data-page="@Model.TotalPages">&raquo;&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Handle search input for live filtering
+    document.getElementById('searchInput').addEventListener('input', function () {
+        performSearchOrPagination();
+    });
+
+    // Handle pagination clicks
+    document.querySelectorAll('.pagination .page-link').forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+            const page = this.dataset.page;
+            performSearchOrPagination(page);
+        });
+    });
+
+    function performSearchOrPagination(page = 1) {
+        const searchTerm = document.getElementById('searchInput').value;
+        const url = new URL(window.location.href);
+        url.searchParams.set('query', searchTerm);
+        url.searchParams.set('pageIndex', page);
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data.');
+                }
+                return response.text();
+            })
+            .then(html => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const resultsTable = doc.querySelector('#resultsTable').innerHTML;
+                const pagination = doc.querySelector('.pagination').innerHTML;
+
+                document.querySelector('#resultsTable').innerHTML = resultsTable;
+                document.querySelector('.pagination').innerHTML = pagination;
+
+                // Reattach event listeners for new pagination links
+                document.querySelectorAll('.pagination .page-link').forEach(function (link) {
+                    link.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        const page = this.dataset.page;
+                        performSearchOrPagination(page);
+                    });
+                });
+            })
+            .catch(error => console.error('Error:', error));
+    }
+</script>

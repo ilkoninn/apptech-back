@@ -1,0 +1,70 @@
+﻿@model ContactUsDTO
+@{
+    ViewBag.Title = "Contact Us Details";
+}
+<div style="color: black" class="container-fluid">
+    <h2>Contact Us Detail</h2>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="FullName">Full Name:</label>
+                <input type="text" id="FullName" class="form-control" value="@Model.FullName" readonly />
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label for="Email">Email:</label>
+                <input type="text" id="Email" class="form-control" value="@Model.Email" readonly />
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                <label for="Message">Message:</label>
+                <textarea id="Message" class="form-control" rows="5" readonly>@Model.Message</textarea>
+            </div>
+        </div>
+    </div>
+
+    @if(Model.ImageUrl is not null)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <label for="ImageUrl">Attached Image:</label>
+                    <br />
+                    <img style="width: 350px; height: auto;" src="@Model.ImageUrl" alt="Attached Image" class="img-fluid" />
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    No image in this question.
+                </div>
+            </div>
+        </div>
+    }
+
+    <a href="@Url.Action("Index", new { pageIndex = Model.PageIndex })" class="btn btn-primary">Back to List</a>
+</div>

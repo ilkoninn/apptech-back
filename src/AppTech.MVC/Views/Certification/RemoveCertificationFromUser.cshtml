@@ -1,0 +1,74 @@
+﻿@using AppTech.MVC.ViewModels
+@model UserCertificationViewModel
+@{
+    ViewBag.Title = "Remove Certification from User";
+}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Remove Certification from User</h1>
+
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">User Certification Details</h6>
+        </div>
+
+        <div style="color: black;" class="card-body">
+            <form asp-action="RemoveCertificationFromUser" method="post" class="form-horizontal">
+
+                <div class="row">
+                    <div class="col-md-6 form-half">
+                        <div class="form-group">
+                            <label asp-for="UsernameOrEmail" class="control-label">Username or Email address</label>
+                            <input asp-for="UsernameOrEmail" class="form-control" placeholder="Enter username or email" />
+                            <span asp-validation-for="UsernameOrEmail" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">Get User Certifications</button>
+                </div>
+            </form>
+
+            @if (Model.Certifications != null && Model.Certifications.Any())
+            {
+                <hr />
+                <h4>User Certifications</h4>
+                <form asp-action="RemoveCertificationFromUser" method="post">
+                    <div class="form-group">
+                        <label asp-for="CertificationId" class="control-label">Certification</label>
+                        <select asp-for="CertificationId" class="form-control">
+                            @foreach (var certification in Model.Certifications)
+                            {
+                                <option value="@certification.Id">
+                                    @certification.Title (Version: @certification.LastVersion)
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="CertificationId" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="hidden" asp-for="UsernameOrEmail" />
+                        <button type="submit" class="btn btn-danger">Remove Certification</button>
+                    </div>
+                </form>
+            }
+        </div>
+    </div>
+</div>

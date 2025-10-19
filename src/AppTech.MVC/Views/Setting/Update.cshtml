@@ -1,0 +1,194 @@
+@model UpdateSettingDTO
+@{
+    ViewBag.Title = "Update Setting";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet" />
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Update Setting</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Setting Details</h6>
+        </div>
+        <div class="card-body" style="color: black">
+            <form asp-action="Update" asp-controller="Setting" enctype="multipart/form-data" method="POST">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="PageIndex" />
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="Page">Page</label>
+                            <input asp-for="Page" class="form-control" placeholder="Enter setting page">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="Type">Type</label>
+                            <input asp-for="Type" class="form-control" placeholder="Enter setting type">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="Key">Key</label>
+                            <input asp-for="Key" class="form-control" placeholder="Enter setting key">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="translations">
+                    @for (int i = 0; i < Model.Translations.Count; i++)
+                    {
+                        <div class="translation-item" id="translation-@i">
+                            <h5>Translation @(i + 1)</h5>
+                            <input type="hidden" asp-for="Translations[i].Id" />
+                            <div class="form-group">
+                                <label asp-for="Translations[i].Value">Translation Value</label>
+
+                                <div id="editor@(i)">
+                                    @Html.Raw(Model.Translations[i].Value)
+                                </div>
+
+                                <input type="hidden" asp-for="Translations[i].Value" id="EditorContent@(i)"
+                                    class="form-control" placeholder="Enter translation value">
+                            </div>
+                            <div class="form-group">
+                                <label asp-for="Translations[i].Language">Language</label>
+                                <select asp-for="Translations[i].Language" class="form-control">
+                                    <option value="Az">Azerbaijani</option>
+                                    <option value="En">English</option>
+                                    <option value="Ru">Russian</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-danger"
+                                onclick="removeTranslation(this, @Model.Translations[i].Id)">Remove</button>
+                            <hr />
+                        </div>
+                    }
+                </div>
+
+                <input type="hidden" name="RemovedTranslationIds" id="RemovedTranslationIds" />
+
+                <button type="button" class="btn btn-secondary" id="addTranslationBtn" onclick="addTranslation()">Add
+                    Another Translation</button>
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Update Setting</button>
+                    <a asp-action="Index" asp-controller="Setting" asp-route-pageIndex="@Model.PageIndex"
+                        class="btn btn-warning">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+
+<script>
+    let translationIndex = @Model.Translations.Count;
+    const maxTranslations = 3; // You can adjust this to set a maximum number of translations
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Check immediately on load
+        checkTranslationLimit();
+
+    @* document.querySelectorAll('.translation-item').forEach(item => {
+            if (!item.querySelector('input[type="text"]').value) {
+            item.remove();
+            }
+            }); *@
+
+            // Re-check translation limits after initialization to ensure correct button state
+            checkTranslationLimit();
+    });
+
+    for (let i = 0; i < translationIndex; i++) {
+        const quill = new Quill(`#editor${i}`, {
+            placeholder: 'Input translation value',
+            theme: 'snow'
+        });
+
+        quill.on('text-change', function () {
+            var editorContent = document.getElementById(`EditorContent${i}`);
+            editorContent.value = quill.root.innerHTML;
+        });
+    }
+
+    function addTranslation() {
+        if (translationIndex >= maxTranslations) {
+            console.log("Maximum translations reached"); // Debug log
+            return; // Exit if max reached
+        }
+
+        const translationsDiv = document.getElementById('translations');
+        translationIndex++; // Increase count before adding new element
+
+        const newTranslation = `
+<div class="translation-item">
+<h5>Translation ${translationIndex}</h5>
+<div class="form-group">
+<label>Translation Value</label>
+<div id="editor${translationIndex - 1}"></div>
+<input type="hidden" class="form-control" id="EditorContent${translationIndex - 1}" name="Translations[${translationIndex - 1}].Value" placeholder="Enter translation value">
+</div>
+<div class="form-group">
+<label>Language</label>
+<select class="form-control" name="Translations[${translationIndex - 1}].Language">
+<option value="Az">Azerbaijani</option>
+<option value="En">English</option>
+<option value="Ru">Russian</option>
+</select>
+</div>
+<button type="button" class="btn btn-danger" onclick="removeTranslation(this, ${translationIndex - 1})">Remove</button>
+<hr />
+</div>`;
+        translationsDiv.insertAdjacentHTML('beforeend', newTranslation);
+        checkTranslationLimit();
+        const quill = new Quill(`#editor${translationIndex - 1}`, {
+            placeholder: 'Input your terms of service here...',
+            theme: 'snow'
+        });
+
+        quill.on('text-change', function () {
+            var editorContent = document.getElementById(`EditorContent${translationIndex - 1}`);
+            editorContent.value = quill.root.innerHTML;
+        });
+    }
+
+    function removeTranslation(button, translationId) {
+        const translationItem = button.closest('.translation-item');
+        translationItem.remove();
+        translationIndex--; // Decrement the count on removal
+
+        if (translationId !== 0) {
+            const removedIdsField = document.getElementById('RemovedTranslationIds');
+            let currentIds = removedIdsField.value ? removedIdsField.value.split(',') : [];
+            currentIds.push(translationId);
+            removedIdsField.value = currentIds.join(',');
+        }
+
+        checkTranslationLimit(); // Check button status after removal
+    }
+
+    function checkTranslationLimit() {
+        const addButton = document.getElementById('addTranslationBtn');
+        addButton.disabled = (translationIndex >= maxTranslations);
+        console.log("Check translation limit:", addButton.disabled, translationIndex); // Debug log to monitor status
+    }
+</script>

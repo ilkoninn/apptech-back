@@ -1,0 +1,684 @@
+﻿@model AppTech.Business.DTOs.QuestionDTOs.DragDropQuestionDTO
+
+<style>
+    .image-editor-container {
+        display: flex;
+        padding: 20px;
+    }
+
+    .form-group input, .form-group select {
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        background-color: #f8f8f8;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+    }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #007bff;
+            background-color: #fff;
+            outline: none;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
+
+    /* Label Styling */
+    .form-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+    }
+
+    .image-area {
+        position: relative;
+        flex: 1;
+        margin-right: 20px;
+    }
+
+    #toggleSelectBtn, #saveBtn, #uploadBtn {
+        display: inline-block;
+        margin: 10px 0;
+        padding: 8px 16px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        border-radius: 4px;
+        background-color: #2196f3;
+        color: #fff;
+        text-align: center;
+    }
+
+    .image-container {
+        position: relative;
+        max-width: 100%;
+        cursor: default;
+    }
+
+        .image-container.creating {
+            cursor: crosshair;
+        }
+
+        .image-container.dragging {
+            cursor: move;
+        }
+
+    #image {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        object-fit: contain;
+    }
+
+    .drop-zone {
+        position: absolute;
+        border: 2px dashed rgba(100, 0, 0, 0.5);
+        background-color: rgba(0, 0, 0, 0.5);
+        box-sizing: border-box;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .resize-handle {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #000;
+        cursor: pointer;
+    }
+
+    .resize-top-left {
+        cursor: nwse-resize;
+        top: -4px;
+        left: -4px;
+    }
+
+    .resize-top-right {
+        cursor: nesw-resize;
+        top: -4px;
+        right: -4px;
+    }
+
+    .resize-bottom-left {
+        cursor: nesw-resize;
+        bottom: -4px;
+        left: -4px;
+    }
+
+    .resize-bottom-right {
+        cursor: nwse-resize;
+        bottom: -4px;
+        right: -4px;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 5px;
+    }
+
+    .delete-btn, .copy-btn, .edit-btn {
+        color: #fff;
+        border: none;
+        padding: 6px 10px;
+        cursor: pointer;
+        z-index: 10;
+        border-radius: 4px;
+    }
+
+    .delete-btn {
+        background: red;
+    }
+
+    .copy-btn {
+        background: blue;
+    }
+
+    .edit-btn {
+        background: green;
+    }
+
+    .zone-editor {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #fff;
+        border: 1px solid #ddd;
+        padding: 10px;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        z-index: 100;
+    }
+
+        .zone-editor label {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .zone-editor input {
+            width: 60px;
+            margin-left: 5px;
+        }
+
+    .variant-list {
+        flex: 0 0 200px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .variant-item {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+
+        .variant-item img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-top: 10px;
+        }
+
+    .btn-secondary {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #6c757d;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+</style>
+<div class="container">
+    <h1 style="color: black;">Create Drag and Drop Question</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+
+    <form id="dragDropForm" method="post" enctype="multipart/form-data">
+        <div class="form-group" style="color: black;">
+            <label for="questionContent">Question Content:</label>
+            <input type="text" id="questionContent" name="QuestionText" placeholder="Enter question content" required>
+        </div>
+
+        <div class="form-group" style="color: black;">
+            <label for="questionPoint">Points:</label>
+            <input type="number" id="questionPoint" name="Point" placeholder="Enter points" min="0" required>
+        </div>
+
+        <div class="form-group" style="color: black;">
+            <label for="certificationId">Select Certification:</label>
+            <select id="certificationId" name="CertificationId" required>
+                <option value="">-- Select Certification --</option>
+                @foreach (var certification in ViewBag.Certifications)
+                {
+                    <option value="@certification.Value">@certification.Text</option>
+                }
+            </select>
+        </div>
+
+        <div class="image-editor-container" style="color: black;">
+            <div class="image-area">
+                <label for="uploadBtn">Upload Image:</label>
+                <input type="file" id="uploadBtn" accept="image/*" name="Image" required>
+
+                <button type="button" id="toggleSelectBtn">New Drop Zone</button>
+                <div class="image-container">
+                    <img id="image">
+                </div>
+
+                <button type="submit" id="saveBtn">Save</button>
+            </div>
+
+            <div class="variant-list" id="variantList">
+            </div>
+        </div>
+    </form>
+    <a asp-action="Index" asp-controller="Question" class="btn btn-sm btn-secondary" style="font-size: 14px;">Back</a>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const uploadBtn = document.getElementById('uploadBtn');
+        const toggleSelectBtn = document.getElementById('toggleSelectBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const imageContainer = document.querySelector('.image-container');
+        const image = document.getElementById('image');
+        const variantList = document.getElementById('variantList');
+
+        let isSelecting = false;
+        let dropZones = [];
+        let currentZone = null;
+        let isDragging = false;
+        let isResizing = false;
+        let selectedZoneIndex = null;
+        let dragOffset = { x: 0, y: 0 };
+        let resizeDirection = null;
+        let editMode = null;
+        let editedZone = { startX: 0, startY: 0, width: 0, height: 0 };
+        let variantIdCounter = 1; // Variant ID generator
+
+        // Handle image upload
+        uploadBtn.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    image.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle saving drop zones
+        saveBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(document.getElementById('dragDropForm'));
+
+            dropZones.forEach((zone, index) => {
+                formData.append(`DropZones[${index}].X`, parseInt(zone.style.left, 10));
+                formData.append(`DropZones[${index}].Y`, parseInt(zone.style.top, 10));
+                formData.append(`DropZones[${index}].Width`, parseInt(zone.style.width, 10));
+                formData.append(`DropZones[${index}].Height`, parseInt(zone.style.height, 10));
+
+                const variantUploadInput = variantList.children[index].querySelector('input[type="file"]');
+                if (variantUploadInput.files.length > 0) {
+                    formData.append(`DropZones[${index}].Image`, variantUploadInput.files[0]);
+                }
+
+                const variantIdInput = variantList.children[index].querySelector('input[type="hidden"]');
+                formData.append(`DropZones[${index}].VariantId`, variantIdInput.value);
+            });
+
+            fetch('/DragDropQuestion/Create', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        window.location.href = '/Question/Index';
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = '/Question/Index';
+                    } else {
+                        window.location.href = '/Question/Index';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    window.location.href = '/Question/Index';
+                });
+        });
+
+        toggleSelectBtn.addEventListener('click', () => {
+            isSelecting = !isSelecting;
+            toggleSelectBtn.textContent = isSelecting ? 'Selecting...' : 'New Drop Zone';
+            imageContainer.classList.toggle('creating', isSelecting);
+        });
+
+        imageContainer.addEventListener('mousedown', (e) => {
+            if (!isSelecting || !image.src) return;
+
+            isSelecting = false;
+            toggleSelectBtn.textContent = 'New Drop Zone';
+            imageContainer.classList.remove('creating');
+
+            const rect = image.getBoundingClientRect();
+            const startX = e.clientX - rect.left;
+            const startY = e.clientY - rect.top;
+
+            currentZone = document.createElement('div');
+            currentZone.className = 'drop-zone';
+            currentZone.style.left = `${startX}px`;
+            currentZone.style.top = `${startY}px`;
+
+            currentZone.dataset.id = dropZones.length + 1;
+
+            const mouseMoveHandler = (e) => {
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+                const width = Math.max(currentX - startX, 10);
+                const height = Math.max(currentY - startY, 10);
+
+                currentZone.style.width = `${width}px`;
+                currentZone.style.height = `${height}px`;
+
+                imageContainer.appendChild(currentZone);
+            };
+
+            const mouseUpHandler = () => {
+                if (currentZone) {
+                    dropZones.push(currentZone);
+                    addDropZoneControls(currentZone, dropZones.length);
+                    currentZone = null;
+
+                    addVariantEntry(dropZones.length);
+                }
+                imageContainer.removeEventListener('mousemove', mouseMoveHandler);
+                imageContainer.removeEventListener('mouseup', mouseUpHandler);
+            };
+
+            imageContainer.addEventListener('mousemove', mouseMoveHandler);
+            imageContainer.addEventListener('mouseup', mouseUpHandler);
+        });
+
+        // Add controls to a drop zone
+        function addDropZoneControls(zone, index) {
+            const directions = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+            directions.forEach(dir => {
+                const handle = document.createElement('div');
+                handle.className = `resize-handle resize-${dir}`;
+                handle.dataset.direction = dir;
+                handle.addEventListener('mousedown', (e) => handleZoneMouseDown(e, index - 1, 'resize'));
+                zone.appendChild(handle);
+            });
+
+            const buttonGroup = document.createElement('div');
+            buttonGroup.className = 'button-group';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.type = 'button';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleDeleteZone(index - 1);
+            });
+            buttonGroup.appendChild(deleteBtn);
+
+            const copyBtn = document.createElement('button');
+            copyBtn.type = 'button';
+            copyBtn.className = 'copy-btn';
+            copyBtn.textContent = 'Copy';
+            copyBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleCopyZone(index - 1);
+            });
+            buttonGroup.appendChild(copyBtn);
+
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.className = 'edit-btn';
+            editBtn.textContent = 'Edit';
+            editBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                handleEditModeToggle(index - 1);
+            });
+            buttonGroup.appendChild(editBtn);
+
+            zone.appendChild(buttonGroup);
+
+            zone.addEventListener('mousedown', (e) => handleZoneDragStart(e, index - 1));
+        }
+
+        // Create a new entry in the variant list
+        function addVariantEntry(index) {
+            const variantItem = document.createElement('div');
+            variantItem.className = 'variant-item';
+
+            const label = document.createElement('div');
+            label.textContent = `Variant ${index}`;
+            variantItem.appendChild(label);
+
+            const variantUpload = document.createElement('input');
+            variantUpload.type = 'file';
+            variantUpload.accept = 'image/*';
+            variantUpload.className = 'variant-upload';
+            variantUpload.dataset.id = index;
+            variantUpload.addEventListener('change', handleVariantImageUpload);
+            variantItem.appendChild(variantUpload);
+
+            const hiddenVariantId = document.createElement('input');
+            hiddenVariantId.type = 'hidden';
+            hiddenVariantId.name = `DropZones[${index}].VariantId`;
+            hiddenVariantId.value = index;
+            variantItem.appendChild(hiddenVariantId);
+
+            variantList.appendChild(variantItem);
+        }
+
+        function handleVariantImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const imagePreview = document.createElement('img');
+                    imagePreview.src = event.target.result;
+                    e.target.parentNode.appendChild(imagePreview);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleDeleteZone(index) {
+            dropZones[index].remove();
+            dropZones.splice(index, 1);
+            variantList.removeChild(variantList.children[index]);
+        }
+
+        // Handle zone copy
+        function handleCopyZone(index) {
+            const zoneToCopy = dropZones[index];
+            const newZone = document.createElement('div');
+            newZone.className = 'drop-zone';
+
+            const startX = parseInt(zoneToCopy.style.left, 10) + 10;
+            const startY = parseInt(zoneToCopy.style.top, 10) + 10;
+            newZone.style.left = `${startX}px`;
+            newZone.style.top = `${startY}px`;
+            newZone.style.width = zoneToCopy.style.width;
+            newZone.style.height = zoneToCopy.style.height;
+
+            imageContainer.appendChild(newZone);
+            dropZones.push(newZone);
+
+            addDropZoneControls(newZone, dropZones.length);
+
+            addVariantEntry(dropZones.length);
+        }
+
+        // Handle entering edit mode
+        function handleEditModeToggle(index) {
+            if (editMode === index) {
+                editMode = null;
+                const editor = document.querySelector('.zone-editor');
+                if (editor) editor.remove();
+            } else {
+                editMode = index;
+                editedZone = {
+                    startX: parseInt(dropZones[index].style.left, 10),
+                    startY: parseInt(dropZones[index].style.top, 10),
+                    width: parseInt(dropZones[index].style.width, 10),
+                    height: parseInt(dropZones[index].style.height, 10)
+                };
+                showEditPopup(index);
+            }
+        }
+
+        // Show edit popup for editing zone dimensions
+        function showEditPopup(index) {
+            let editor = document.querySelector('.zone-editor');
+            if (!editor) {
+                editor = document.createElement('div');
+                editor.className = 'zone-editor';
+                imageContainer.appendChild(editor);
+            }
+            editor.innerHTML = `
+                        <label>X: <input type="number" name="startX" value="${editedZone.startX}"></label>
+                        <label>Y: <input type="number" name="startY" value="${editedZone.startY}"></label>
+                        <label>Width: <input type="number" name="width" value="${editedZone.width}"></label>
+                        <label>Height: <input type="number" name="height" value="${editedZone.height}"></label>
+                        <button id="saveEditBtn">Save</button>
+                    `;
+            editor.style.top = `${editedZone.startY}px`;
+            editor.style.left = `${editedZone.startX}px`;
+
+            const inputs = editor.querySelectorAll('input');
+            inputs.forEach(input => {
+                input.addEventListener('input', handleInputChange);
+            });
+
+            document.getElementById('saveEditBtn').addEventListener('click', handleSaveEdit);
+        }
+
+        // Handle input changes in the editor
+        function handleInputChange(e) {
+            const { name, value } = e.target;
+            editedZone[name] = parseInt(value, 10) || 0;
+        }
+
+        // Save the edited zone
+        function handleSaveEdit() {
+            if (editMode !== null) {
+                const updatedZone = dropZones[editMode];
+                updatedZone.style.left = `${editedZone.startX}px`;
+                updatedZone.style.top = `${editedZone.startY}px`;
+                updatedZone.style.width = `${editedZone.width}px`;
+                updatedZone.style.height = `${editedZone.height}px`;
+                editMode = null;
+                const editor = document.querySelector('.zone-editor');
+                if (editor) editor.remove();
+            }
+        }
+
+        // Handle dragging a zone
+        function handleZoneDragStart(e, index) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            isDragging = true;
+            selectedZoneIndex = index;
+
+            const zone = dropZones[selectedZoneIndex];
+            const rect = image.getBoundingClientRect();
+            dragOffset.x = e.clientX - rect.left - parseInt(zone.style.left, 10);
+            dragOffset.y = e.clientY - rect.top - parseInt(zone.style.top, 10);
+
+            imageContainer.classList.add('dragging');
+            imageContainer.addEventListener('mousemove', handleZoneDragging);
+            window.addEventListener('mouseup', handleZoneDragEnd);
+        }
+
+        function handleZoneDragging(e) {
+            if (!isDragging || selectedZoneIndex === null) return;
+
+            const zone = dropZones[selectedZoneIndex];
+            const rect = image.getBoundingClientRect();
+            let newX = e.clientX - rect.left - dragOffset.x;
+            let newY = e.clientY - rect.top - dragOffset.y;
+
+            newX = Math.max(0, Math.min(newX, rect.width - parseInt(zone.style.width, 10)));
+            newY = Math.max(0, Math.min(newY, rect.height - parseInt(zone.style.height, 10)));
+
+            zone.style.left = `${newX}px`;
+            zone.style.top = `${newY}px`;
+        }
+
+        function handleZoneDragEnd() {
+            isDragging = false;
+            selectedZoneIndex = null;
+            imageContainer.classList.remove('dragging');
+            imageContainer.removeEventListener('mousemove', handleZoneDragging);
+            window.removeEventListener('mouseup', handleZoneDragEnd);
+        }
+
+        // Handle resizing a zone
+        function handleZoneMouseDown(e, index, action) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            selectedZoneIndex = index;
+            if (action === 'resize') {
+                isResizing = true;
+                resizeDirection = e.target.dataset.direction;
+            }
+        }
+
+        const handleResizing = (e) => {
+            if (!isResizing || selectedZoneIndex === null || !resizeDirection) return;
+
+            const rect = image.getBoundingClientRect();
+            const zone = dropZones[selectedZoneIndex];
+            let { startX, startY, width, height } = {
+                startX: parseInt(zone.style.left, 10),
+                startY: parseInt(zone.style.top, 10),
+                width: parseInt(zone.style.width, 10),
+                height: parseInt(zone.style.height, 10)
+            };
+
+            let newWidth = width;
+            let newHeight = height;
+            let newStartX = startX;
+            let newStartY = startY;
+
+            const deltaX = e.clientX - rect.left - startX;
+            const deltaY = e.clientY - rect.top - startY;
+
+            if (resizeDirection.includes('right')) {
+                newWidth = Math.max(deltaX, 10);
+                newWidth = Math.min(newWidth, rect.width - startX);
+            }
+            if (resizeDirection.includes('bottom')) {
+                newHeight = Math.max(deltaY, 10);
+                newHeight = Math.min(newHeight, rect.height - startY);
+            }
+            if (resizeDirection.includes('left')) {
+                newWidth = Math.max(width - (e.clientX - rect.left - startX), 10);
+                newStartX = startX + (width - newWidth);
+                newWidth = Math.min(newWidth, startX + width);
+                newStartX = Math.max(newStartX, 0);
+            }
+            if (resizeDirection.includes('top')) {
+                newHeight = Math.max(height - (e.clientY - rect.top - startY), 10);
+                newStartY = startY + (height - newHeight);
+                newHeight = Math.min(newHeight, startY + height);
+                newStartY = Math.max(newStartY, 0);
+            }
+
+            zone.style.left = `${newStartX}px`;
+            zone.style.top = `${newStartY}px`;
+            zone.style.width = `${newWidth}px`;
+            zone.style.height = `${newHeight}px`;
+        };
+
+        window.addEventListener('mousemove', handleResizing);
+        window.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                resizeDirection = null;
+                selectedZoneIndex = null;
+            }
+        });
+    });
+</script>

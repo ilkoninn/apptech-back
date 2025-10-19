@@ -1,0 +1,391 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>AppTech</title>
+    <link href="~/css/sb-admin-2.min.css" rel="stylesheet">
+
+    <!-- Custom fonts for this template-->
+    <link href="~/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <style>
+        /* Custom Color Palette */
+        :root {
+            --primary-color: #b2d235; /* Light green */
+            --dark-bg: #282c35; /* Dark background */
+            --light-text: #fff; /* Light text */
+            --dark-text: #333; /* Dark text */
+            --light-bg: #f8f9fc; /* Light background for sections */
+            --success-color: #28a745; /* Default success button color */
+            --primary-color-dark: #98bf1e; /* Darker green for hover */
+            --success-color-dark: #218838; /* Darker success button hover color */
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--light-text);
+        }
+
+        .navbar, .sidebar, .sidebar-card, footer {
+            background-color: var(--dark-bg);
+        }
+
+            .navbar-brand, .sidebar a, .nav-link, .sidebar-brand-text, footer {
+                color: var(--light-text) !important;
+            }
+
+        .topbar {
+            background-color: white !important;
+            color: var(--dark-text); 
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+        }
+
+        .sidebar {
+            background-color: var(--dark-bg) !important;
+        }
+        .btn-primary, .btn-success {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+            .btn-primary:hover, .btn-success:hover {
+                background-color: var(--primary-color-dark); /* Use darker primary color */
+                border-color: var(--primary-color-dark); /* Darker border */
+            }
+
+            .btn-success:hover {
+                background-color: var(--success-color-dark); /* Darker success button hover */
+                border-color: var(--success-color-dark); /* Darker success border */
+            }
+
+        /* Adjusting sidebar styles */
+        .sidebar {
+            background-color: var(--dark-bg);
+        }
+
+            .sidebar .nav-link {
+                color: var(--light-text);
+            }
+
+                .sidebar .nav-link:hover {
+                    background-color: var(--primary-color);
+                    color: var(--dark-bg);
+                }
+
+        .collapse-item {
+            color: var(--dark-text);
+        }
+
+        .bg-white {
+            background-color: var(--light-bg) !important;
+        }
+
+        .text-gray-500 {
+            color: var(--dark-text) !important;
+        }
+
+        .input-group-append .btn {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Scroll to top button */
+        .scroll-to-top {
+            background-color: var(--primary-color);
+        }
+
+        /* Scrollbar Styles */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 6px;
+            border: 3px solid var(--light-bg);
+        }
+
+        /* Scrollable sidebar */
+        .sidebar {
+            background-color: var(--dark-bg);
+        }
+    </style>
+
+</head>
+
+<body id="page-top">
+
+    <!-- Page Wrapper -->
+    <div id="wrapper">
+
+        <!-- Sidebar -->
+        <!-- Sidebar -->
+        <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar">
+            <!-- Divider -->
+            <hr class="sidebar-divider my-0">
+
+            <!-- Nav Item - Dashboard -->
+            <li class="nav-item active">
+                <a class="nav-link" asp-action="Index" asp-controller="Home">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>AppTech Dashboard</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Heading -->
+            <div class="sidebar-heading">
+                Interface
+            </div>
+
+            @if (User.IsInRole("Admin") || User.IsInRole("Teacher"))
+            {
+                <!-- Users Controller Link -->
+                <li class="nav-item">
+                    <a class="nav-link" asp-action="Index" asp-controller="User">
+                        <i class="fas fa-fw fa-user"></i>
+                        <span>Users</span>
+                    </a>
+                </li>
+            }
+
+            <!-- Company Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Company">
+                    <i class="fas fa-fw fa-building"></i>
+                    <span>Company</span>
+                </a>
+            </li>
+
+            <!-- Certification Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Certification">
+                    <i class="fas fa-fw fa-certificate"></i>
+                    <span>Certification</span>
+                </a>
+            </li>
+
+            <!-- Exam Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Exam">
+                    <i class="fas fa-fw fa-file-alt"></i>
+                    <span>Exam</span>
+                </a>
+            </li>
+
+            <!-- ExamPackage Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="ExamPackage">
+                    <i class="fas fa-fw fa-box"></i>
+                    <span>Exam Packages</span>
+                </a>
+            </li>
+
+            <!-- ExamResult Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="ExamResult">
+                    <i class="fas fa-fw fa-book-open"></i>
+                    <span>Exam Results</span>
+                </a>
+            </li>
+
+            <!-- Question Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Question">
+                    <i class="fas fa-fw fa-question-circle"></i>
+                    @await Component.InvokeAsync("ReportedQuestionCount")
+                </a>
+            </li>
+
+
+            <!-- Question Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Subscription">
+                    <i class="fa fa-user-plus"></i>
+                    <span>Subscriptions</span>
+                </a>
+            </li>
+
+
+            @if (User.IsInRole("Admin"))
+            {
+                <!-- Transaction Controller Link -->
+                <li class="nav-item">
+                    <a class="nav-link" asp-action="Index" asp-controller="Transaction">
+                        <i class="fas fa-fw fa-money-check-alt"></i>
+                        <span>Transactions</span>
+                    </a>
+                </li>
+
+                <!-- Partner Controller Link -->
+                <li class="nav-item">
+                    <a class="nav-link" asp-action="Index" asp-controller="Partner">
+                        <i class="fas fa-fw fa-handshake"></i>
+                        <span>Partners</span>
+                    </a>
+                </li>
+
+                <!-- Settings Controller Link -->
+                <li class="nav-item">
+                    <a class="nav-link" asp-action="Index" asp-controller="Setting">
+                        <i class="fas fa-fw fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                </li>
+            }
+
+            <!-- Promotion Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Promotion">
+                    <i class="fas fa-fw fa-tags"></i>
+                    <span>Promotion</span>
+                </a>
+            </li>
+
+            <!-- Contact Us Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="ContactUs">
+                    <i class="fas fa-fw fa-envelope"></i>
+                    <span>Contact Us</span>
+                </a>
+            </li>
+
+            <!-- Comment Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Comment">
+                    <i class="fas fa-fw fa-comments"></i>
+                    <span>Comments</span>
+                </a>
+            </li>
+
+            <!-- News Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="News">
+                    <i class="fas fa-fw fa-newspaper"></i>
+                    <span>News</span>
+                </a>
+            </li>
+
+            <!-- FAQs Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="FAQ">
+                    <i class="fas fa-info-circle"></i>
+                    <span>FAQs</span>
+                </a>
+            </li>
+
+            <!-- Gift Cards Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="GiftCard">
+                    <i class="fas fa-gift"></i>
+                    <span>Gift Cards</span>
+                </a>
+            </li>
+
+            <!-- Notifications Controller Link -->
+            <li class="nav-item">
+                <a class="nav-link" asp-action="Index" asp-controller="Notification">
+                    <i class="fas fa-fw fa-bell"></i>
+                    <span>Notifications</span>
+                </a>
+            </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider">
+
+            <!-- Sidebar Toggler (Sidebar) -->
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+        </ul>
+
+        <!-- End of Sidebar -->
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
+
+            <!-- Main Content -->
+            <div id="content">
+
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+                        <li class="nav-item dropdown no-arrow mb-3">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <img class="img-profile rounded-circle" src="~/img/undraw_profile.svg">
+                                <span class="mr-2 mx-2 d-none d-lg-inline text-gray-600 small" style="font-size: 16px;">
+                                    @(User.Identity.IsAuthenticated
+                                        ? User.Identity.Name : "Unknown")
+                                </span>
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                                <a style="color: black" class="dropdown-item" asp-action="Logout" asp-controller="Account">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Logout
+                                </a>
+                            </div>
+                        </li>
+                    </ul>               
+                </nav>
+                <!-- End of Topbar -->
+                @RenderBody()
+
+            </div>
+            <!-- End of Main Content -->
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Your Website 2021</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+    <!-- Bootstrap core JavaScript-->
+    <script src="~/vendor/jquery/jquery.min.js"></script>
+    <script src="~/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="~/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="~/js/sb-admin-2.min.js"></script>
+
+    <!-- Page level plugins -->
+    <script src="~/vendor/chart.js/Chart.min.js"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="~/js/demo/chart-area-demo.js"></script>
+    <script src="~/js/demo/chart-pie-demo.js"></script>
+
+</body>
+
+</html>

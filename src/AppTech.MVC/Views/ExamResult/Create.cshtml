@@ -1,0 +1,39 @@
+﻿@model ExamResultViewModel
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Create Exam Result</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Exam Result Details</h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div class="form-group">
+                    <label style="color:black;" for="Exam">Exam</label>
+                    <select class="form-control" asp-for="ExamId">
+                        <option style="color:black;" value="">Select Exam</option>
+                        @foreach (var exam in Model.Exams)
+                        {
+                            <option value="@exam.Id">@exam.Code</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label style="color:black;" for="User">User</label>
+                    <select class="form-control" asp-for="UserId">
+                        <option style="color:black;" value="">Select User</option>
+                        @foreach (var user in Model.Users)
+                        {
+                            <option value="@user.Id">@user.UserName</option>
+                        }
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-success">Save</button>
+                <a asp-action="Index" class="btn btn-secondary">Back</a>
+            </form>
+        </div>
+    </div>
+</div>

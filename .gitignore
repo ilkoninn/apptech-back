@@ -1,0 +1,77 @@
+## .NET build artifacts
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+project.lock.json
+project.fragment.lock.json
+
+## User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Visual Studio
+.vs/
+src/.vs/
+.vscode/
+
+## Rider
+.idea/
+
+## Publish profiles (local dev only)
+*.pubxml
+*.pubxml.user
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+
+## Package files
+*.nupkg
+*.snupkg
+
+## Generated files
+*.dll
+*.exe
+*.log
+*.cache
+*.pdb
+*.dbmdl
+
+## Coverage
+*.coverage
+*.coveragexml
+*.opencover.xml
+coverage*.json
+CoverageResults/
+
+## Others
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.tmp
+*.bak
+~$*
+*~
+
+## OS-specific
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride

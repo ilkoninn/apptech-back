@@ -1,0 +1,104 @@
+﻿@model CreateNotificationVM
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Create Notification</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <form asp-action="Create" method="post">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Notification Details</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label style="color:black" for="Title">Notification Title</label>
+                            <input type="text" class="form-control" asp-for="Title" placeholder="Enter notification title" required />
+                        </div>
+                        <div class="form-group">
+                            <label style="color:black" for="Description">Notification Description (Optional)</label>
+                            <textarea class="form-control" asp-for="Description" placeholder="Enter notification description (optional)"></textarea>
+                        </div>
+                         <button type="submit" class="btn btn-success">Create Notification</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">Select Users</h6>
+                    </div>
+                    <div class="card-body" style="color:black;">
+                        <input type="text" class="form-control mb-3" id="userSearch" placeholder="Search for users..." onkeyup="searchUsers()">
+                        <button type="button" class="btn btn-info mb-3" id="toggleSelectButton" onclick="toggleSelectUsers()">Select All Users</button>
+                        <div class="list-group" id="userList">
+                            @foreach (var user in Model.Users)
+                            {
+                                <div class="list-group-item">
+                                    <input type="checkbox" name="SelectedUserIds" value="@user.Id" class="user-checkbox">
+                                    @(user.FullName is null ? user.UserName : user.FullName) (@user.Email)
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+<script>
+    function searchUsers() {
+        var input, filter, ul, li, a, i, txtValue;
+        input = document.getElementById("userSearch");
+        filter = input.value.toUpperCase();
+        ul = document.getElementById("userList");
+        li = ul.getElementsByTagName("div");
+        for (i = 0; i < li.length; i++) {
+            a = li[i];
+            txtValue = a.textContent || a.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
+            } else {
+                li[i].style.display = "none";
+            }
+        }
+    }
+
+    let allSelected = false;  
+
+    function toggleSelectUsers() {
+        var checkboxes = document.getElementsByClassName('user-checkbox');
+        var toggleButton = document.getElementById('toggleSelectButton');
+
+        if (allSelected) {
+             for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = false;
+            }
+            toggleButton.textContent = "Select All Users";
+        } else {
+             for (var i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = true;
+            }
+            toggleButton.textContent = "Remove All Users";
+        }
+
+        allSelected = !allSelected;  
+    }
+</script>

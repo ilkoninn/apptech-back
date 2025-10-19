@@ -1,0 +1,150 @@
+﻿@using AppTech.Core.Entities.Commons
+@model PaginatedQueryable<News>
+<style>
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color); /* Customize with your primary color */
+        border-color: var(--primary-color-dark);
+        color: white;
+    }
+
+    .pagination .page-link {
+        color: var(--primary-color); /* Customize with your primary color */
+    }
+
+        .pagination .page-link:hover {
+            background-color: var(--primary-color);
+            color: var(--primary-color-dark); /* Customize hover color */
+        }
+</style>
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-2 text-gray-800">News</h1>
+        <a asp-action="Create" class="btn btn-sm btn-primary" style="font-weight: bold; font-size: 16px;">Create New News</a>
+    </div>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">News List</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table style="text-align: center;" class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Title</th>
+                            <th>Url</th>
+                            <th>Image</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>@item.Title</td>
+                                <td>@item.Url</td>
+                                <td><img src="@item.ImageUrl" alt="@item.Title" style="width: 100px; height: auto;" /></td>
+                                <td>
+                                    <a asp-action="Update" asp-controller="News" asp-route-id="@item.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-warning">Update</a>
+
+                                    @if (item.IsDeleted)
+                                    {
+                                        <a asp-action="Recover" asp-controller="News" asp-route-id="@item.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-success recover-button">Recover</a>
+                                        <a asp-action="Remove" asp-controller="News" asp-route-id="@item.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-danger delete-button">Remove</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Delete" asp-controller="News" asp-route-id="@item.Id" asp-route-pageIndex="@Model.PageIndex" class="btn btn-sm btn-danger delete-button">Delete</a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        <!-- First and Previous Buttons -->
+                        <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-pageIndex="1" asp-route-pageSize="@ViewBag.PageSize" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item @(Model.PageIndex == 1 ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-pageIndex="@(Model.PageIndex - 1)" asp-route-pageSize="@ViewBag.PageSize" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <!-- Pagination Numbers with Dots Logic -->
+                        @if (Model.TotalPages > 1)
+                        {
+                            <!-- Show first page -->
+                            <li class="page-item @(Model.PageIndex == 1 ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-pageIndex="1" asp-route-pageSize="@ViewBag.PageSize">1</a>
+                            </li>
+
+                            <!-- Show dots if necessary before the current page range -->
+                            @if (Model.PageIndex > 3)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+
+                            <!-- Show pages around the current page (one before, one after) -->
+                            @for (int i = Math.Max(2, Model.PageIndex - 1); i <= Math.Min(Model.TotalPages - 1, Model.PageIndex + 1); i++)
+                            {
+                                <li class="page-item @(Model.PageIndex == i ? "active" : "")">
+                                    <a class="page-link" asp-action="Index" asp-route-pageIndex="@i" asp-route-pageSize="@ViewBag.PageSize">@i</a>
+                                </li>
+                            }
+
+                            <!-- Show dots if necessary after the current page range -->
+                            @if (Model.PageIndex < Model.TotalPages - 2)
+                            {
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            }
+
+                            <!-- Show last page -->
+                            <li class="page-item @(Model.PageIndex == Model.TotalPages ? "active" : "")">
+                                <a class="page-link" asp-action="Index" asp-route-pageIndex="@Model.TotalPages" asp-route-pageSize="@ViewBag.PageSize">@Model.TotalPages</a>
+                            </li>
+                        }
+
+                        <!-- Next and Last Buttons -->
+                        <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-pageIndex="@(Model.PageIndex + 1)" asp-route-pageSize="@ViewBag.PageSize" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item @(Model.PageIndex == Model.TotalPages ? "disabled" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-pageIndex="@Model.TotalPages" asp-route-pageSize="@ViewBag.PageSize" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include SweetAlert2 and your custom JS file -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+<script src="~/js/sweetAlert.js"></script>

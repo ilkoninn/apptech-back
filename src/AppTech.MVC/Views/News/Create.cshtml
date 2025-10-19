@@ -1,0 +1,140 @@
+﻿@model CreateNewsDTO
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Create News</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">News Details</h6>
+        </div>
+        <div style="color: black;" class="card-body">
+            <form asp-action="Create" asp-controller="News" enctype="multipart/form-data" method="POST">
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Title">Title</label>
+                            <input asp-for="Title" type="text" class="form-control" placeholder="Enter news title">
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Url">URL</label>
+                            <input asp-for="Url" type="text" class="form-control" placeholder="Enter news URL">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Image">Image</label>
+                            <input asp-for="Image" type="file" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-header mb-4" style="margin-left: -20px; width: 103.3%">
+                    <h6 class="m-0 font-weight-bold text-primary">News Translations</h6>
+                </div>
+
+                <div id="translations">
+                    <div class="translation-item">
+                        <h5>Translation 1</h5>
+                        <div class="form-group">
+                            <label for="Description">Description</label>
+                            <textarea class="form-control" name="Translations[0].Description" placeholder="Enter translation description"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="Language">Language</label>
+                            <select class="form-control" name="Translations[0].Language">
+                                <option value="Az">Azerbaijani</option>
+                                <option value="En">English</option>
+                                <option value="Ru">Russian</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-danger" onclick="removeTranslation(this)">Remove</button>
+                        <hr />
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-secondary" id="addTranslationBtn" onclick="addTranslation()">Add Another Translation</button>
+                
+
+                <div class="mt-3">
+                    <button type="submit" class="btn btn-success">Create News</button>
+                    <a href="@Url.Action("Index", "News")" class="btn btn-warning">Back</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    let translationIndex = 1;
+    const maxTranslations = 3;
+
+    function addTranslation() {
+        if (translationIndex >= maxTranslations) return;
+
+        const translationsDiv = document.getElementById('translations');
+        const newTranslation = `
+        <div class="translation-item">
+            <h5>Translation ${translationIndex + 1}</h5>
+            <div class="form-group">
+                <label for="Translations_${translationIndex}__Description">Description</label>
+                <textarea class="form-control" name="Translations[${translationIndex}].Description"
+                    placeholder="Enter translation description"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="Translations_${translationIndex}__Language">Language</label>
+                <select class="form-control" name="Translations[${translationIndex}].Language">
+                    <option value="Az">Azerbaijani</option>
+                    <option value="En">English</option>
+                    <option value="Ru">Russian</option>
+                </select>
+            </div>
+            <button type="button" class="btn btn-danger" onclick="removeTranslation(this)">Remove</button>
+            <hr />
+        </div>`;
+        translationsDiv.insertAdjacentHTML('beforeend', newTranslation);
+        translationIndex++;
+
+        // Disable the Add Translation button if max translations are reached
+        if (translationIndex >= maxTranslations) {
+            document.getElementById('addTranslationBtn').disabled = true;
+        }
+    }
+
+    function removeTranslation(button) {
+        const translationItem = button.closest('.translation-item');
+        translationItem.remove();
+
+        const translationItems = document.querySelectorAll('.translation-item');
+        translationItems.forEach((item, index) => {
+            item.querySelector('h5').textContent = `Translation ${index + 1}`;
+            item.querySelector('textarea[name^="Translations["]').name = `Translations[${index}].Description`;
+            item.querySelector('select[name^="Translations["]').name = `Translations[${index}].Language`;
+        });
+
+        translationIndex = translationItems.length;
+
+        if (translationIndex < maxTranslations) {
+            document.getElementById('addTranslationBtn').disabled = false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (translationIndex >= maxTranslations) {
+            document.getElementById('addTranslationBtn').disabled = true;
+        }
+    });
+</script>

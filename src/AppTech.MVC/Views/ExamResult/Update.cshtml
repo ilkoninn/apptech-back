@@ -1,0 +1,203 @@
+﻿@using AppTech.MVC.ViewModels.UserVMs;
+@model UpdateExamResultViewModel
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Update Exam</h1>
+    <div class="col-md-12 text-center">
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">
+                @TempData["ErrorMessage"]
+            </div>
+        }
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+    </div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Exam Details</h6>
+        </div>
+        <div class="card-body" style="color: black">
+            <form asp-action="Update">
+                <div class="row">
+                    <!-- ProjectId and VpcId Section -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Project ID:</label>
+                            <p class="form-control-plaintext">@Model.ProjectId</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>VPC ID:</label>
+                            <p class="form-control-plaintext">@Model.VpcId</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Section -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="ExamId">Select Exam</label>
+                            <select asp-for="ExamId" class="form-control" asp-items="@(new SelectList(Model.Exams, "Id", "Code"))">
+                                <option value="">Select an Exam</option>
+                            </select>
+                            <span asp-validation-for="ExamId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="IsPassed">Is Passed?</label>
+                            <select asp-for="IsPassed" class="form-control">
+                                <option value="true">Yes</option>
+                                <option value="false">No</option>
+                            </select>
+                            <span asp-validation-for="IsPassed" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="UserId">Select User</label>
+                            <select asp-for="UserId" class="form-control" asp-items="@(new SelectList(Model.Users, "Id", "UserName"))">
+                                <option value="">Select a User</option>
+                            </select>
+                            <span asp-validation-for="UserId" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="UserScore">User Score</label>
+                            <input type="number" asp-for="UserScore" class="form-control" />
+                            <span asp-validation-for="UserScore" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Droplets Section -->
+                @if (Model.Droplets != null && Model.Droplets.Count > 0)
+                {
+                    <h5 class="mt-4">Droplets</h5>
+                    <div class="row droplets-container">
+                        <div class="col-md-6">
+                            <div class="form-group droplet-item">
+                                <label class="droplet-label">Project ID:</label>
+                                <p class="form-control-plaintext droplet-value">@Model.ProjectId</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group droplet-item">
+                                <label class="droplet-label">VPC ID:</label>
+                                <p class="form-control-plaintext droplet-value">@Model.VpcId</p>
+                            </div>
+                        </div>
+                    </div>
+                    <style>
+                        /* Ümumi konteyner üçün stil */
+                        .droplets-container {
+                            background: #f9f9f9; /* Açıq fond rəngi */
+                            border-radius: 8px; /* Küncləri yuvarlaqlaşdır */
+                            padding: 20px; /* İçəridən boşluq əlavə et */
+                            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); /* Yumşaq kölgə */
+                            margin-top: 20px; /* Yuxarıdakı elementdən boşluq */
+                        }
+
+                        /* Hər bir droplet elementinin stili */
+                        .droplet-item {
+                            margin-bottom: 20px; /* Elementlər arasında boşluq */
+                        }
+
+                        /* Label stili */
+                        .droplet-label {
+                            font-weight: bold; /* Qalın mətn */
+                            font-size: 16px; /* Bir az böyük ölçü */
+                            color: #333; /* Tünd boz rəng */
+                            margin-bottom: 5px; /* Yazı ilə dəyər arasında boşluq */
+                            display: block; /* Tam xətt tutması üçün */
+                        }
+
+                        /* Dəyər mətni üçün stil */
+                        .droplet-value {
+                            font-size: 14px; /* Normal mətn ölçüsü */
+                            color: #555; /* Açıq tünd boz rəng */
+                            background: #fff; /* Ağ fon */
+                            padding: 8px 12px; /* İçəridən boşluq */
+                            border-radius: 5px; /* Küncləri yuvarlaqlaşdır */
+                            border: 1px solid #ddd; /* Zərif haşiyə */
+                            display: inline-block; /* Yazını kompakt saxlamaq üçün */
+                        }
+                    </style>
+                    <table class="table table-bordered table-striped mt-4">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Custom Username</th>
+                                <th>Password</th>
+                                <th>Public IP Address</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var droplet in Model.Droplets)
+                            {
+                                <tr id="droplet-@droplet.Id">
+                                    <td>
+                                        <input type="text" name="CustomUsername" value="@droplet.CustomUsername" class="form-control" />
+                                    </td>
+                                    <td>
+                                        <input type="text" name="Password" value="@droplet.Password" class="form-control" />
+                                    </td>
+                                    <td>
+                                        <input type="text" name="PublicIpAddress" value="@droplet.PublicIpAddress" class="form-control" />
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger btn-sm delete-droplet" data-id="@droplet.Id">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div class="alert alert-warning">No droplets available to display.</div>
+                }
+
+                <button type="submit" class="btn btn-primary mt-4">Update</button>
+                <a asp-action="Index" class="btn btn-secondary mt-4">Back to List</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.delete-droplet').forEach(button => {
+            button.addEventListener('click', function () {
+                const dropletId = this.getAttribute('data-id');
+                if (confirm("Are you sure you want to delete this droplet?")) {
+                    fetch(`/ExamResult/DeleteDroplet/${dropletId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        }
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                document.getElementById(`droplet-${dropletId}`).remove();
+                                alert('Droplet deleted successfully.');
+                            } else {
+                                alert('Failed to delete the droplet. Please try again.');
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                }
+            });
+        });
+    });
+</script>
